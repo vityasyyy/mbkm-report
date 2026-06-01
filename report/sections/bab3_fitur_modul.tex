@@ -1,0 +1,111 @@
+%BAB III: HARDSKILL - PENGEMBANGAN FITUR DAN MODUL PROYEK
+\section{MBKM -- Hardskill: Pengembangan Fitur dan Modul Proyek}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \textbf{Nama} & : Muhammad Argya Vityasy \\
+        \textbf{NIM} & : 23/522547/PA/22475 \\
+        \textbf{Pembimbing Akademik} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Pembimbing Program MBKM} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Mata Kuliah} & : Internship: Pengembangan Fitur dan Modul Proyek \\
+        \textbf{Kode MK} & : MII21-3011 \\
+        \textbf{Total SKS} & : 4 SKS \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
+    \end{tabular}
+\end{table}
+
+\subsection{Landasan Teori}
+
+Pengembangan fitur dalam lingkup Digital Employee (DE) dilakukan berdasarkan prinsip clean code, modular design, dan arsitektur multi-agent yang terstandardisasi. DE merupakan platform agen otomasi berbasis AI yang menggunakan Model Context Protocol (MCP) untuk komunikasi antara agen dan layanan eksternal. Arsitektur ini memungkinkan pengembangan tool yang bersifat modular, sehingga setiap komponen dapat dikembangkan, diuji, dan diimplementasikan secara independen.
+
+Setiap tool dalam ekosistem DE wajib memenuhi kontrak berupa \texttt{args\_schema} (Pydantic BaseModel), \texttt{tool\_config\_schema}, \texttt{get\_tool\_config()}, dan metode \texttt{\_run()}. Pendekatan ini menjamin konsistensi antar modul dan memudahkan integrasi ke dalam orkestrasi agen yang lebih besar. Selain itu, pola coordinator-subagent memungkinkan agen utama mendelegasikan tugas ke sub-agen yang lebih spesifik berdasarkan intensi pengguna, sehingga membentuk hirarki eksekusi yang terstruktur.
+
+\subsection{Kegiatan}
+
+Kegiatan pengembangan fitur dan modul proyek dilakukan pada tiga domain utama: Digital Employee Project Manager (DE-PM), Digital Employee Weekly Report (DE-WR), dan Digital Employee Weekly Report Issue Reoccuring (DE-WRI).
+
+\subsubsection{Digital Employee Project Manager (Pamela)}
+
+DE-PM adalah agen otomasi untuk manajemen proyek yang terdiri dari enam sub-agen dengan tanggung jawab spesifik. Penulis berkontribusi pada pengembangan:
+
+\begin{itemize}
+    \item \textbf{Meeting Join Agent}: Memprovisikan bot Meemo ke Google Meet untuk merekam rapat secara otomatis melalui \texttt{meemo\_join\_meeting\_tool}.
+    \item \textbf{GitHub Issue Reminder Tool}: Melakukan pemindaian isu terbuka di GitHub dan mengirim pengingat melalui tiga tingkat eskalasi -- assignee, manager, dan senior manager -- berdasarkan aturan interval waktu dan hierarki organisasi yang tersimpan di Google Sheets.
+    \item \textbf{Project Items Reminder Tool}: Memantau GitHub Projects v2 untuk tugas dengan due date, yang overdue, unassigned, atau tanggal yang hilang.
+    \item \textbf{MoM (Minutes of Meeting) Agent}: Mengambil data rapat dari Meemo, membuat Google Docs MoM secara otomatis, dan mengirim email riwayat rapat kepada peserta dengan filter domain.
+\end{itemize}
+
+Escalation pada \texttt{issue\_reminder\_tool} menggunakan logika stateful yang mengevaluasi usia isu terbuka dan memutuskan tingkat pengingat berikutnya berdasarkan \texttt{EscalationContext} dan \texttt{get\_escalation()}.
+
+\subsubsection{Project Manager Datasaur (Knowledge Aggregation DE)}
+
+DE-PM-Datasaur adalah variasi PM untuk tenant Datasaur dengan 15 sub-agen yang mengumpulkan pengetahuan dari Slack, Gmail, Notion, dan Datadog. Penulis berkontribusi pada:
+
+\begin{itemize}
+    \item \textbf{MCP Sub-Agent Pattern}: Mengimplementasikan pola di mana setiap MCP (Notion, Slack, Gmail, Datadog) dibungkus dalam sub-agen khusus untuk membatasi akses tool pada skill-router agen.
+    \item \textbf{Notion dan Slack Tool Integration}: Tool seperti \texttt{search\_notion\_page\_tool}, \texttt{get\_notion\_page\_content\_tool}, dan \texttt{send\_slack\_notification\_tool} untuk retrieval dan penyimpanan data operasional.
+    \item \textbf{Datadog MCP Integration}: Integrasi monitoring infrastruktur melalui \texttt{datadog\_mcp\_subagent} untuk \textit{panel intelligence} dan \textit{dev ops}.
+\end{itemize}
+
+\subsubsection{Digital Employee Weekly Report (Claudia)}
+
+DE-Weekly Report adalah agen otomasi yang mengelola laporan mingguan dari tim engineering, terdiri dari tujuh sub-agen:
+
+\begin{itemize}
+    \item \textbf{Weekly Report Ingestor}: Menggunakan \texttt{IngestionOrchestratorTool} untuk menarik laporan dari Google Drive dan menyimpannya ke PostgreSQL, mengelola base data organisasi/pegawai/proyek dari CATAPA.
+    \item \textbf{Issue Processing Agent}: Mengekstrak isu dan meneruskan ke sub-agen scoring dengan rubrik (Blokir Critical Path = 5, KPI Variance = 4, Urgency = 3, Escalation Request = 3, Recurrence = 2, maksimum 17).
+    \item \textbf{Report Updater Agent}: Memperbarui Google Docs \textit{Top 5 Issues} per organisasi menggunakan \texttt{TopIssuesByOrgTool} yang merender tabel markdown per organisasi.
+    \item \textbf{Empty Weekly Report Agent}: Mendeteksi laporan kosong melalui pencarian placeholder \texttt{(please insert here)} pada dokumen Google Docs, mengunggah snapshot PDF, dan melacak laporan kosong di spreadsheet master.
+    \item \textbf{Weekly Report QnA Agent}: Memberikan jawaban bahasa alami atas riwayat isu melalui \texttt{sql\_tool\_mcp} (read-only SQL database).
+\end{itemize}
+
+\subsubsection{E2B Sandbox Issue Processing}
+
+Sebagai alternatif scoring berbasis LLM langsung, penulis mengimplementasikan jalur E2B untuk memproses isu di dalam sandbox Python terisolasi:
+
+\begin{lstlisting}[caption={Alur E2B Issue Processing dalam Weekly Report}]
+# Jalur paralel dengan ThreadPoolExecutor
+# Setiap batch mendapat sandbox E2B terpisah
+# Mengunggah runner_source.py (~825 baris) ke sandbox
+# Menginstal dependensi: openai, httpx, python-dotenv, requests
+# Menjalankan scoring dengan LLM via OpenRouter
+# Menangani PII anonymization via NER API
+# Timeout per tool call: 7200 detik
+\end{lstlisting}
+
+\subsubsection{Digital Employee Weekly Report Issue Reoccuring}
+
+DE-WRI adalah sistem pelacakan isu berulang yang terintegrasi dengan GitHub, terdiri dari dua sub-agen:
+
+\begin{enumerate}
+    \item \textbf{Escalation Agent}: Orkestrator pipeline 5 langkah:
+    \begin{enumerate}
+        \item Fetch semua isu 14 hari terakhir melalui \texttt{FetchEmployeeIssuesTool}.
+        \item Deteksi isu berulang lintas minggu menggunakan \texttt{RecurringIssueDetectorTool} dengan \texttt{ExactMatcher} ( \textit{case-insensitive exact string match} ).
+        \item Lookup mapping GitHub untuk pegawai melalui \texttt{LookupGitHubDataTool}.
+        \item Proses setiap isu berulang (create, comment, atau close GitHub issue melalui BOSA connector).
+        \item Kirim notifikasi email melalui \texttt{SendEmailTool}.
+    \end{enumerate}
+    \item \textbf{GitHub DB Sync Agent}: Melakukan sinkronisasi harian antara status isu di basis data dengan status nyata di GitHub API.
+\end{enumerate}
+
+Skenario keputusan untuk setiap isu berulang:
+
+\begin{lstlisting}[caption={Decision tree untuk isu berulang}]
+# Untuk setiap isu berulang:
+# - Cari catatan eskalasi di DB
+# - Tidak ditemukan -> Buat isu GitHub baru, catat di DB
+# - Ditemukan + status=open -> Verifikasi di GitHub API
+#   - GitHub says closed -> Tutup DB record, buat isu baru
+#   - GitHub says open -> Tambahkan komentar pada isu yang ada
+# - Ditemukan + status=closed -> Tutup DB record, buat isu baru
+\end{lstlisting}
+
+\subsection{Refleksi}
+
+Pengembangan fitur untuk Digital Employee mengajarkan betapa pentingnya pemisahan tanggung jawab (single responsibility) pada agen dan tool. Pengalaman membangun 15 sub-agen DE-PM-Datasaur dan tujuh sub-agen DE-Weekly Report menunjukkan bahwa orkestrasi agen menjadi kompleks ketika setiap sub-agen memiliki instruksi, tool, dan MCP yang berbeda. Pendekatan \textit{coordinator-subagent} dengan MCP Sub-Agent Pattern memungkinkan kontrol akses yang granular, sedangkan mekanisme eskalasi pada issue reminder menunjukkan pentingnya stateful processing dalam sistem otomasi. Penerapan E2B sandbox pada issue scoring juga mengajarkan bahwa keamanan eksekusi kode tidak boleh ditawar demi kelincahan LLM.
+
+\clearpage
+

@@ -1,0 +1,46 @@
+%BAB VII: HARDSKILL - PENGUJIAN INTEGRASI DAN SISTEM
+\section{MBKM -- Hardskill: Pengujian Integrasi dan Sistem}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \textbf{Nama} & : Muhammad Argya Vityasy \\
+        \textbf{NIM} & : 23/522547/PA/22475 \\
+        \textbf{Pembimbing Akademik} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Pembimbing Program MBKM} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Mata Kuliah} & : Internship: Pengujian Integrasi dan Sistem \\
+        \textbf{Kode MK} & : MII21-3016 \\
+        \textbf{Total SKS} & : 3 SKS \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
+    \end{tabular}
+\end{table}
+
+\subsection{Landasan Teori}
+
+Pengujian integrasi bertujuan memverifikasi bahwa komponen-komponen perangkat lunak yang telah lolos pengujian unit dapat berinteraksi dengan benar ketika digabungkan. Pengujian sistem meluas lebih jauh untuk memastikan seluruh aplikasi berfungsi sebagai satu kesatuan dalam lingkungan yang menyerupai produksi. Dalam konteks Digital Employee, pengujian integrasi mencakup validasi alur agen (coordinator ke sub-agen ke tools ke MCP ke API eksternal), sementara pengujian sistem mencakup validasi pipeline CI/CD dan deployment end-to-end.
+
+\subsection{Kegiatan}
+
+\subsubsection{Playwright End-to-End Testing}
+
+Tim engineering GDP Labs menggunakan Playwright (TypeScript) untuk pengujian end-to-end pada antarmuka dan alur kerja Digital Employee. Penulis berkontribusi pada upkeep dan penambahan skenario pengujian untuk alur screening agent, final interview scheduling, dan meeting recording melalui bot Meemo.
+
+Kasus pengujian mencakup skenario positif (alur berhasil) dan negatif (penanganan kegagalan, seperti jadwal konflik atau kegagalan API eksternal). Hasil pengujian memberikan jaminan bahwa alur happy path dan beberapa skenario edge case telah tercakup.
+
+\subsubsection{CI/CD Pipeline Integration Tests}
+
+Pipeline \texttt{build-python-services.yaml} menjalankan pengujian integrasi setiap kali ada pull request atau merge ke branch \texttt{develop} atau \texttt{main}. Pipeline ini menggunakan self-hosted runner AWS EC2 yang terhubung ke layanan internal (PostgreSQL, Elasticsearch, RabbitMQ).
+
+Penulis secara rutin meninjau hasil pengujian pipeline dan menyelidiki kegagalan yang terjadi akibat inkonsistensi lingkungan, misalnya perbedaan versi Elasticsearch atau masalah autentikasi ke AWS ECR. Aktivitas ini mencakup interpretasi log CI, replikasi masalah secara lokal, dan perbaikan berupa pembaruan variabel lingkungan atau penyesuaian urutan boot layanan.
+
+\subsubsection{Validasi Deployment End-to-End}
+
+Setelah deployment ke lingkungan demo atau prod, penulis melakukan validasi manual dan otomatis untuk memastikan Digital Employee dapat menjalankan siklus penuh: menerima instruksi, mengorkestrasi agen, memanggil tools, mengembalikan hasil. Validasi dilakukan dengan memicu job Kubernetes CronJob secara manual dan memeriksa log output serta status akhir dari proses eksekusi.
+
+\subsection{Refleksi}
+
+Pengujian integrasi dan sistem memperlihatkan bahwa kesalahan yang tidak terdeteksi dalam pengujian unit sering kali baru muncul pada interaksi antar komponen, terutama pada sistem terdistribusi dengan banyak dependensi eksternal. Pengalaman mengatasi kegagalan pipeline CI/CD juga mengajarkan pentingnya dokumentasi lingkungan dan reproducible builds. Selain itu, koordinasi dengan tim infra GDP Labs selama investigasi masalah memperkuat kemampuan komunikasi teknis lintas tim.
+
+\clearpage
+

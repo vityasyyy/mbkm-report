@@ -1,0 +1,81 @@
+%BAB IV: HARDSKILL - IMPLEMENTASI PROTOTIPE PRODUK
+\section{MBKM -- Hardskill: Implementasi Prototipe Produk}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \textbf{Nama} & : Muhammad Argya Vityasy \\
+        \textbf{NIM} & : 23/522547/PA/22475 \\
+        \textbf{Pembimbing Akademik} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Pembimbing Program MBKM} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Mata Kuliah} & : Internship: Implementasi Prototipe Produk \\
+        \textbf{Kode MK} & : MII21-3013 \\
+        \textbf{Total SKS} & : 4 SKS \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
+    \end{tabular}
+\end{table}
+
+\subsection{Landasan Teori}
+
+Proof-of-concept (PoC) merupakan prototipe fungsional yang dikembangkan untuk memvalidasi kelayakan teknis suatu solusi sebelum diintegrasikan ke dalam sistem produksi. Dalam konteks AI agent, PoC mencakup validasi kemampuan model bahasa dalam mengekstrak informasi, melakukan inferensi, serta mengorkestrasi alur kerja melalui protokol standar seperti MCP. Retrieval-Augmented Generation (RAG) adalah pendekatan yang menggabungkan pencarian informasi dari basis pengetahuan dengan kemampuan generasi teks model bahasa, sehingga menghasilkan respons yang lebih akurat dan terkini.
+
+\subsection{Kegiatan}
+
+\subsubsection{E2B Sandbox untuk Issue Scoring}
+
+Salah satu prototipe yang diimplementasikan adalah sistem penilaian isu (issue scoring) menggunakan lingkungan sandbox E2B (Environment to Build). Sandbox ini menyediakan lingkungan eksekusi Python yang terisolasi dan aman untuk menjalankan kode yang dihasilkan oleh model bahasa besar (LLM) selama proses analisis isu.
+
+\begin{lstlisting}[caption={Konfigurasi dan eksekusi di E2B sandbox}]
+from e2b_code_interpreter import Sandbox
+
+sandbox = Sandbox()
+result = sandbox.run_code("""
+import json
+issues = json.loads(issues_json)
+for issue in issues:
+    issue['severity_score'] = assess_priority(issue)
+print(json.dumps(issues))
+""")
+\end{lstlisting}
+
+Prototipe ini memungkinkan Digital Employee Weekly Report untuk mengevaluasi kepentingan setiap isu dalam laporan mingguan secara otomatis, tanpa membahayakan lingkungan produksi. Validasi dilakukan dengan membandingkan hasil scoring LLM dengan penilaian manual oleh tim product manager.
+
+\subsubsection{Prototipe RAG Pipeline}
+
+Penulis juga terlibat dalam eksplorasi dan prototipe pipeline RAG melalui \texttt{gl-sdk-cookbook}, khususnya pada sisi gen-ai SDK. Beberapa prototipe yang dikembangkan meliputi:
+
+\begin{enumerate}
+    \item \textbf{Semantic Routing}: Membangun router yang mengarahkan pertanyaan pengguna ke pipeline RAG yang sesuai berdasarkan makna semantik query.
+    \item \textbf{Query Transformation}: Mengimplementasikan modul yang menulis ulang query pengguna menjadi bentuk yang lebih optimal untuk pencarian dokumen, meningkatkan kualitas retrieval.
+    \item \textbf{Multimodal Input Handling}: Membuat prototipe yang menerima input selain teks untuk memberikan respons yang lebih kaya.
+    \item \textbf{Caching Mechanism}: Menambahkan lapisan cache pada pipeline retrieval untuk mengurangi latensi dan biaya embedding berulang.
+\end{enumerate}
+
+\subsubsection{AI PR Feedback Collector}
+
+Pada repositori \texttt{gdplabs-exploration}, penulis berkontribusi pada pengembangan AI Pull Request Feedback Collector, yaitu tool otomatis yang menganalisis komentar pada pull request GitHub untuk mengekstrak metrik kualitas masukan (feedback) dari penggunaan LLM.
+
+\begin{lstlisting}[caption={Contoh ekstraksi feedback dari komentar PR}]
+def extract_ai_feedback(comments):
+    feedback_entries = []
+    for comment in comments:
+        if "START REVIEW" in comment.body:
+            entry = {
+                "model": extract_model(comment),
+                "caught_by_reviewer": (
+                    "caught by reviewer" in comment.body
+                ),
+            }
+            feedback_entries.append(entry)
+    return feedback_entries
+\end{lstlisting}
+
+Prototipe ini membantu tim engineering memahami efektivitas bantuan AI dalam proses review kode, serta mengidentifikasi area di mana model perlu ditingkatkan.
+
+\subsection{Refleksi}
+
+Kegiatan prototipe mengajarkan pentingnya validasi teknis sebelum investasi pengembangan penuh. Penggunaan sandbox E2B, misalnya, memperlihatkan bahwa keamanan eksekusi kode tidak boleh dikompromikan demi fleksibilitas AI. Eksplorasi RAG juga membuka wawasan tentang kompleksitas nyata dalam sistem question answering berbasis pengetahuan, yang melibatkan tidak hanya model bahasa tetapi juga desain pipeline retrieval, transformasi query, dan manajemen cache.
+
+\clearpage
+

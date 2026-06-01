@@ -1,0 +1,52 @@
+% PREAMBLE - Packages and Configuration
+\documentclass[a4paper,12pt]{article}
+\usepackage[left=3cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{titlesec}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}
+\usepackage{indentfirst}
+
+% Page style
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Code listing style
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{red},
+    commentstyle=\color{green!50!black},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b,
+    xleftmargin=1em,
+    framexleftmargin=1em
+}
+
+% Section formatting
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection.}{1em}{}

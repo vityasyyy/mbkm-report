@@ -1,0 +1,83 @@
+%BAB VI: HARDSKILL - PENGUJIAN UNIT DAN MODUL PROYEK
+\section{MBKM -- Hardskill: Pengujian Unit dan Modul Proyek}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \textbf{Nama} & : Muhammad Argya Vityasy \\
+        \textbf{NIM} & : 23/522547/PA/22475 \\
+        \textbf{Pembimbing Akademik} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Pembimbing Program MBKM} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Mata Kuliah} & : Internship: Pengujian Unit dan Modul Proyek \\
+        \textbf{Kode MK} & : MII21-3015 \\
+        \textbf{Total SKS} & : 3 SKS \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
+    \end{tabular}
+\end{table}
+
+\subsection{Landasan Teori}
+
+Pengujian unit adalah pengujian perangkat lunak yang dilakukan pada unit-unit terkecil (biasanya fungsi atau metode) secara terisolasi untuk memastikan bahwa setiap unit berperilaku sesuai ekspektasi. Prinsip pengujian unit yang baik mencakup isolasi eksternal menggunakan mock, skenario positif dan negatif, serta cakupan pengujian yang cukup. Threshold cakupan (coverage threshold) yang ditetapkan GDP Labs untuk proyek Digital Employee adalah tinggi, mendorong tim untuk menulis pengujian yang menyeluruh pada logika bisnis maupun integrasi antar modul.
+
+\subsection{Kegiatan}
+
+\subsubsection{Unit Test untuk Tenant Information Tool}
+
+Penulis menyusun pengujian unit untuk \texttt{tenant\_info\_tool} yang menguji logika pencarian tenant dan penanganan kesalahan. Pengujian dilakukan menggunakan pytest dengan fixture untuk mengisolasi dependensi eksternal seperti API CATAPA.
+
+\begin{lstlisting}[caption={Contoh unit test dengan mock untuk tool}]
+import pytest
+from unittest.mock import MagicMock
+from tools.tenant_info_tool import TenantInfoTool
+
+def test_tenant_lookup_success():
+    tool = TenantInfoTool()
+    mock_client = MagicMock()
+    mock_client.search.return_value = [
+        {"name": "Catapa", "status": "active"}
+    ]
+    tool.client = mock_client
+    result = tool._run(tenant_name="Catapa")
+    assert result["status"] == "verified"
+    assert result["tenant_name"] == "Catapa"
+
+def test_tenant_lookup_not_found():
+    tool = TenantInfoTool()
+    mock_client = MagicMock()
+    mock_client.search.return_value = []
+    tool.client = mock_client
+    with pytest.raises(TenantNotFoundError):
+        tool._run(tenant_name="UnknownTenant")
+\end{lstlisting}
+
+\subsubsection{Pengujian Evalground Test Package}
+
+Pada repositori \texttt{de-tools}, penulis mengembangkan pengujian untuk modul \texttt{evalground/test\_package.py} yang menangani validasi paket pengujian untuk Digital Employee. Pengujian mencakup skenario parsing data uji, validasi format masukan, dan penanganan kegagalan saat struktur data tidak sesuai.
+
+\subsubsection{Coverage Analysis dan Threshold Enforcement}
+
+Pengujian dijalankan menggunakan perintah \texttt{pytest -n 4} untuk eksekusi paralel, dengan alat \texttt{pytest-cov} untuk melaporkan cakupan kode. Konfigurasi pada \texttt{pyproject.toml} mengatur direktori dan file yang dikecualikan dari perhitungan cakupan, termasuk \texttt{main.py}, file migrasi, dan file terkait Docker.
+
+\begin{lstlisting}[caption={Konfigurasi pytest-cov pada pyproject.toml}]
+[tool.coverage.run]
+omit = [
+    "*/main.py",
+    "*/migration/*",
+    "*/Dockerfile*",
+    "*/tests/*",
+]
+\end{lstlisting}
+
+Penulis secara rutin memantau laporan \texttt{htmlcov/} untuk mengidentifikasi area kode yang belum tercakup pengujian, kemudian menambahkan kasus uji yang sesuai.
+
+\subsubsection{Mocking untuk Agent Dependencies}
+
+Pengujian sub-agen Digital Employee memerlukan pendekatan mock yang cermat karena agen sering kali bergantung pada layanan eksternal (LLM runtime, Google API, CATAPA). Penulis menggunakan fixture pytest berupa mocked MCP server dan mocked agent runtime untuk mensimulasikan perilaku tool tanpa melakukan panggilan jaringan sebenarnya.
+
+\subsection{Refleksi}
+
+Pengujian unit tidak hanya memastikan kebenaran logika, tetapi juga berfungsi sebagai dokumentasi hidup (living documentation) yang menjelaskan ekspektasi dari setiap fungsi. Kesulitan terbesar adalah menentukan batas antara pengujian unit (isolasi) dan pengujian integrasi (interaksi), terutama pada komponen yang sangat bergantung pada konfigurasi runtime seperti agen AI. Pengalaman ini memperkuat pentingnya menulis kode yang dapat diuji sejak awal (testable by design).
+
+\clearpage
+

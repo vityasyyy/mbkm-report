@@ -1,0 +1,140 @@
+%BAB V: HARDSKILL - PENGEMBANGAN BACKEND
+\section{MBKM -- Hardskill: Pengembangan Backend}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \textbf{Nama} & : Muhammad Argya Vityasy \\
+        \textbf{NIM} & : 23/522547/PA/22475 \\
+        \textbf{Pembimbing Akademik} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Pembimbing Program MBKM} & : Guntur Budi Herwanto, S.Kom., M.Cs. \\
+        \textbf{Mata Kuliah} & : Internship: Pengembangan Backend \\
+        \textbf{Kode MK} & : MII21-3014 \\
+        \textbf{Total SKS} & : 4 SKS \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
+    \end{tabular}
+\end{table}
+
+\subsection{Landasan Teori}
+
+Pengembangan backend dalam konteks Digital Employee mencakup perancangan dan implementasi layanan yang mendukung orkestrasi agen AI, autentikasi, manajemen data, serta komunikasi antar mikro-layanan. Arsitektur yang diterapkan menggunakan pola clean architecture dan dependency injection, yang memisahkan logika bisnis dari infrastruktur teknis. Identity and Access Management (IAM) merupakan komponen kritis yang menjamin setiap permintaan (request) ke sistem tervalidasi dan berwenang sesuai peran (role) pengguna atau agen.
+
+GDP Labs mengembangkan GL-IAM SDK, sebuah kit perangkat lunak yang menyediakan abstraksi SIMI (Single Interface Multiple Implementation) untuk manajemen identitas dan akses. SDK ini mendukung berbagai penyedia autentikasi (PostgreSQL, Keycloak, Stack Auth) melalui satu gateway interface yang sama, sehingga aplikasi tidak perlu menulis ulang kode autentikasi ketika penyedia diganti.
+
+\subsection{Kegiatan}
+
+\subsubsection{Integrasi FastAPI dengan GL-IAM SDK}
+
+Penulis mengimplementasikan beberapa contoh integrasi GL-IAM dengan framework FastAPI sebagai bagian dari \texttt{gl-iam-cookbook}. Integrasi ini mencakup endpoint yang terlindungi oleh berbagai level otorisasi, mulai dari autentikasi pengguna dasar hingga validasi agent delegation token.
+
+\begin{lstlisting}[caption={Inisialisasi IAM Gateway pada FastAPI (lifespan)}]
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from gl_iam import IAMGateway
+from gl_iam.providers import PostgreSQLProvider, PostgreSQLConfig
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    config = PostgreSQLConfig(
+        host="localhost",
+        database="iam_db",
+        user="postgres",
+        password="secret",
+    )
+    provider = PostgreSQLProvider(config)
+    gateway = IAMGateway.from_fullstack_provider(provider)
+    set_iam_gateway(gateway)
+    yield
+    await provider.close()
+
+app = FastAPI(lifespan=lifespan)
+\end{lstlisting}
+
+Endpoint-endpoint yang dibuat meliputi:
+
+\begin{itemize}
+    \item \texttt{GET /profile} -- profil pengguna yang terautentikasi melalui \texttt{get\_current\_user}.
+    \item \texttt{GET /admin/dashboard} -- endpoint khusus admin menggunakan \texttt{require\_org\_admin()}.
+    \item \texttt{GET /agent/documents} -- endpoint untuk agen terdelegasi menggunakan \texttt{get\_current\_agent} dan \texttt{require\_agent\_scope("docs:read")}.
+\end{itemize}
+
+\subsubsection{Manajemen API Key dengan Hierarki Scope}
+
+Penulis mengimplementasikan sistem manajemen API key berbasis hierarki tiga tingkat: PLATFORM, ORGANIZATION, dan PERSONAL. API key pada tingkat yang lebih atas dapat menurunkan scope-nya ke dalam child key dengan batasan waktu hidup (lifetime) yang lebih sempit.
+
+\begin{lstlisting}[caption={Pembuatan API key dengan scope inheritance}]
+# Create organization key
+org_key = await gateway.api_key_provider.create_key(
+    name="prod-api-key",
+    key_type="ORGANIZATION",
+    owner_id=org_id,
+    scopes=["api:read", "api:write", "users:manage"],
+)
+
+# Child key -- subset of parent scope, with expiry
+child_key = await gateway.api_key_provider.create_key(
+    name="service-temp-key",
+    key_type="PERSONAL",
+    parent_key_id=org_key.id,
+    scopes=["api:read"],
+    expires_at=datetime.utcnow() + timedelta(days=7),
+)
+\end{lstlisting}
+
+\subsubsection{Agent Delegasi dan Cross-Service Validation}
+
+Salah satu kontribusi utama adalah implementasi sistem agent delegation di mana pengguna dapat mendelegasikan sebagian scope-nya kepada agen AI. Agen tersebut kemudian membawa delegation token (JWT) yang dapat divalidasi di layanan lain menggunakan shared secret dan basis data PostgreSQL yang sama.
+
+\begin{lstlisting}[caption={Registrasi agen dan pemberian delegation token}]
+# Register agent
+registration = AgentRegistration(
+    name="weekly-report-agent",
+    agent_type=AgentType.WORKER,
+    owner_user_id=user.id,
+    allowed_scopes=["reports:read", "reports:write"],
+)
+result = await gateway.register_agent(registration)
+
+# Delegate to agent
+task = TaskContext(id="task-001", purpose="generate_weekly_report")
+scope = DelegationScope(scopes=["reports:read"], expires_in_seconds=3600)
+delegation = await gateway.delegate_to_agent(
+    principal_token=raw_jwt,
+    agent_id=agent_id,
+    task=task,
+    scope=scope,
+)
+\end{lstlisting}
+
+\subsubsection{Deployment dengan Docker dan Helm}
+
+Penulis berkontribusi pada perbaikan pipeline Docker di repositori Digital Employee, khususnya multi-stage build yang memisahkan tahap build dari tahap runtime (image minimal dengan pengguna non-root).
+
+\begin{lstlisting}[caption={Konfigurasi Dockerfile multi-stage}]
+# Builder stage
+FROM python:3.12-slim AS builder
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN pip install uv && uv sync
+COPY . .
+RUN make test && make lint
+
+# Runtime stage
+FROM python:3.12-slim AS runtime
+RUN useradd --create-home --shell /bin/bash catapa
+WORKDIR /app
+COPY --from=builder /app/.venv ./.venv
+COPY --chown=catapa:catapa . .
+USER catapa
+ENTRYPOINT ["./entrypoint.sh"]
+\end{lstlisting}
+
+Selain itu, penulis berpartisipasi dalam pembaruan tag image (berbasis hash komit Git) dan penyesuaian variabel konfigurasi dalam ConfigMap dan Secret terenkripsi GPG untuk deployment Helm ke Kubernetes.
+
+\subsection{Refleksi}
+
+Pengembangan backend di GDP Labs mengajarkan pentingnya arsitektur terpisah (separation of concerns) dalam skala enterprise. SDK GL-IAM sangat menarik karena tidak hanya menyederhanakan autentikasi, tetapi juga memikirkan skenario keamanan seperti scope narrowing pada delegation dan rotasi kunci partner SSO. Pengalaman ini juga memperkuat pemahaman tentang deployment dengan Docker multi-stage dan Helm yang memungkinkan perbedaan konfigurasi tanpa mengubah kode aplikasi.
+
+\clearpage
+
