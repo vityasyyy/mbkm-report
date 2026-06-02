@@ -3,11 +3,11 @@
 
 \subsection{Kesimpulan}
 
-Kegiatan magang di PT Sumber Cipta Multiniaga (GDP Labs) selama periode 9 Februari 2026 -- 22 Juni 2026 memberikan kontribusi signifikan terhadap pengembangan keterampilan teknis dan non-teknis penulis. Dari sisi hardskill, pengalaman ini meliputi:
+Kegiatan magang di PT Sumber Cipta Multiniaga (GDP Labs) selama periode 9 Februari 2026 -- 22 Juni 2026 memberikan kontribusi signifikan terhadap pengembangan keterampilan teknis dan non-teknis. Dari sisi hardskill, pengalaman ini meliputi:
 
 \begin{enumerate}
-    \item \textbf{Pengembangan fitur dan modul}: Merancang dan mengimplementasikan custom tools untuk Digital Employee (tenant info tool, weekly report tools, GitHub issue automation) dengan prinsip modularitas dan clean code.
-    \item \textbf{Implementasi prototipe}: Membangun proof-of-concept untuk skenario AI seperti issue scoring di E2B sandbox, pipeline RAG (semantic routing, query transformation), serta analisis masukan AI pada pull request.
+    \item \textbf{Pengembangan fitur dan modul}: Merancang dan mengimplementasikan custom tools untuk Digital Employee (weekly report tools, pipeline eskalasi isu GitHub, E2B analytics agent) dengan prinsip modularitas dan clean code.
+    \item \textbf{Implementasi prototipe}: Membangun proof-of-concept untuk skenario AI seperti E2B analytics agent untuk generasi laporan MoM, perbaikan memory leak pada E2B issue processing runner.
     \item \textbf{Pengembangan backend}: Mengembangkan layanan backend dengan Python dan FastAPI yang terintegrasi dengan GL-IAM SDK untuk autentikasi berbasis JWT, manajemen API key, dan agent delegation.
     \item \textbf{Pengujian unit dan modul}: Menyusun dan menjalankan pengujian unit menggunakan pytest dengan pendekatan mocking dan analisis cakupan kode (coverage).
     \item \textbf{Pengujian integrasi dan sistem}: Mengikuti serta berkontribusi pada pengujian integrasi melalui CI/CD (GitHub Actions) dan pengujian end-to-end dengan Playwright untuk memastikan keandalan sistem secara menyeluruh.
@@ -17,18 +17,18 @@ Dari sisi softskill, kegiatan ini melatih kemampuan bekerjasama dalam tim Agile/
 
 \subsection{Saran}
 
-Berdasarkan pengalaman mengikuti program MBKM di GDP Labs, penulis menyampaikan saran berikut:
+Berdasarkan pengalaman mengikuti program MBKM di GDP Labs, disampaikan saran berikut:
 
 \subsubsection{Saran untuk Perusahaan}
 \begin{enumerate}
     \item \textbf{Dokumentasi runbook untuk CI/CD failures}: Tim infra disarankan untuk membuat runbook resmi yang mendeskripsikan daftar kegagalan pipeline umum dan langkah penanganannya, sehingga mengurangi waktu investigasi perulangan.
-    \item \textbf{Peningkatan onboarding proyek baru}: Template Cookiecutter sudah sangat membantu, namun penambahan panduan video atau sesi live walkthrough akan mempercepat adaptasi anggota tim baru, termasuk magang.
+    \item \textbf{Standardisasi konfigurasi timeout pada sandbox eksekusi}: Pengalaman menangani berbagai batas waktu default (60 detik pada AIP, 180 detik pada E2B SDK) yang tidak terdokumentasi menunjukkan perlunya standar timeout eksplisit terdokumentasi untuk setiap sandbox eksekusi berbasis AI, sehingga mengurangi waktu debugging akibat timeout implisit.
 \end{enumerate}
 
 \subsubsection{Saran untuk Akademik}
 \begin{enumerate}
     \item \textbf{Integrasi praktik Agile ke kurikulum}: Disarankan agar mata kuliah Proyek Rekayasa Perangkat Lunak atau sejenisnya memasukkan elemen praktik Agile (sprint planning, stand-up, retrospektif) sebagai bagian dari penilaian proyek, sehingga mahasiswa lebih siap menghadapi lingkungan industri.
-    \item \textbf{Pembelajaran infrastructure as code}: Menambahkan topik deployment (Docker, Kubernetes, Helm) ke kurikulum opsional akan sangat bermanfaat mengingat banyak perusahaan teknologi menggunakan pendekatan ini untuk deployment produksi.
+    \item \textbf{Pola desain SDK untuk layanan enterprise}: Menambahkan topik pola integrasi SDK seperti SIMI (Single Interface Multiple Implementation), provider protocol, dan dependency injection pada mata kuliah Pengembangan Perangkat Lunak akan sangat relevan mengingat banyak perusahaan teknologi menggunakan pola-pola ini untuk mengelola berbagai penyedia layanan identitas dan autentikasi.
 \end{enumerate}
 
 \clearpage

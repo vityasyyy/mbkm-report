@@ -24,19 +24,33 @@ Pengujian integrasi bertujuan memverifikasi bahwa komponen-komponen perangkat lu
 
 \subsubsection{Playwright End-to-End Testing}
 
-Tim engineering GDP Labs menggunakan Playwright (TypeScript) untuk pengujian end-to-end pada antarmuka dan alur kerja Digital Employee. Penulis berkontribusi pada upkeep dan penambahan skenario pengujian untuk alur screening agent, final interview scheduling, dan meeting recording melalui bot Meemo.
+Tim engineering GDP Labs menggunakan Playwright (TypeScript) sebagai kerangka pengujian end-to-end untuk antarmuka dan alur kerja Digital Employee. Kontribusi dilakukan pada tiga area proyek pengujian, yang masing-masing diuraikan berikut ini.
 
-Kasus pengujian mencakup skenario positif (alur berhasil) dan negatif (penanganan kegagalan, seperti jadwal konflik atau kegagalan API eksternal). Hasil pengujian memberikan jaminan bahwa alur happy path dan beberapa skenario edge case telah tercakup.
+\paragraph{DE-PM MoM Workflow E2E Tests.}
+
+Pengujian end-to-end dikembangkan untuk alur kerja Minutes of Meeting (MoM) secara menyeluruh: pengecekan integrasi Meemo, pengambilan daftar rapat, pencarian dokumen MoM di Google Drive, konversi dokumen ke HTML, dan pengiriman email kepada para peserta. Skenario pengujian integrasi juga ditambahkan untuk proyek-proyek CATAPA, GLAIR, GLC, dan DSO.
+
+Sejumlah perbaikan dilakukan selama pengembangan. Pemasangan parameter (\textit{parameter nesting}) diperbaiki, misalnya \texttt{time\_min} menjadi \texttt{request.body.timeMin}, agar permintaan API sesuai dengan skema yang diharapkan. Selain itu, umpan balik dari tinjauan kode berbantuan AI (\textit{AI code review}) diresolusi, mencakup perbaikan keamanan berupa ketidakcocokan tipe variabel lingkungan pada \texttt{DEFAULT\_RECIPIENT\_FILTER} serta perbaikan performa berupa penambahan konstanta \texttt{POLL\_INTERVAL} dan \texttt{MAX\_WAIT} guna menghindari pembanjiran server API (\textit{API server overwhelming}).
+
+\paragraph{DE-PM-Datasaur E2E Tests.}
+
+Untuk proyek ini, dilakukan scaffolding proyek Playwright beserta kerangka pendukung pengujian (\textit{test support framework}). Page objects dan test fixtures untuk antarmuka Slack diimplementasikan guna mempermudah penulisan pengujian yang terstruktur. Infrastruktur pengisian dan pembersihan data pengujian secara otomatis (\textit{automated test data seeding and cleanup}) juga dibangun.
+
+Dua cacat (\textit{bug}) signifikan ditemukan dan diperbaiki melalui pengujian ini, yaitu kebocoran panel utas (\textit{thread panel leakage}) dan \textit{race condition} pada status \textit{thinking} agen. Sebagai bagian dari perbaikan, dialog notifikasi Slack kini ditutup secara otomatis sebelum interaksi dengan panel utas dilakukan.
+
+\paragraph{DE-PM PM 008 Integration Tests.}
+
+Pengujian integrasi spesifik proyek ditambahkan untuk proyek CATAPA, GLAIR, GLC, dan DSO, meliputi skenario rapat masing-masing proyek. Ekspektasi terhadap \textit{tool} yang digunakan agen diselaraskan dengan perilaku agen yang sebenarnya, mengoreksi ketidaksesuaian dari rancangan awal. Berkas \texttt{pyrightconfig.json} juga ditambahkan untuk mendukung pemeriksaan tipe (\textit{type checking}) pada basis kode TypeScript.
 
 \subsubsection{CI/CD Pipeline Integration Tests}
 
 Pipeline \texttt{build-python-services.yaml} menjalankan pengujian integrasi setiap kali ada pull request atau merge ke branch \texttt{develop} atau \texttt{main}. Pipeline ini menggunakan self-hosted runner AWS EC2 yang terhubung ke layanan internal (PostgreSQL, Elasticsearch, RabbitMQ).
 
-Penulis secara rutin meninjau hasil pengujian pipeline dan menyelidiki kegagalan yang terjadi akibat inkonsistensi lingkungan, misalnya perbedaan versi Elasticsearch atau masalah autentikasi ke AWS ECR. Aktivitas ini mencakup interpretasi log CI, replikasi masalah secara lokal, dan perbaikan berupa pembaruan variabel lingkungan atau penyesuaian urutan boot layanan.
+Secara rutin ditinjau hasil pengujian pipeline dan menyelidiki kegagalan yang terjadi akibat inkonsistensi lingkungan, misalnya perbedaan versi Elasticsearch atau masalah autentikasi ke AWS ECR. Aktivitas ini mencakup interpretasi log CI, replikasi masalah secara lokal, dan perbaikan berupa pembaruan variabel lingkungan atau penyesuaian urutan boot layanan.
 
 \subsubsection{Validasi Deployment End-to-End}
 
-Setelah deployment ke lingkungan demo atau prod, penulis melakukan validasi manual dan otomatis untuk memastikan Digital Employee dapat menjalankan siklus penuh: menerima instruksi, mengorkestrasi agen, memanggil tools, mengembalikan hasil. Validasi dilakukan dengan memicu job Kubernetes CronJob secara manual dan memeriksa log output serta status akhir dari proses eksekusi.
+Setelah deployment ke lingkungan demo atau prod, Dilakukan validasi manual dan otomatis untuk memastikan Digital Employee dapat menjalankan siklus penuh: menerima instruksi, mengorkestrasi agen, memanggil tools, mengembalikan hasil. Validasi dilakukan dengan memicu job Kubernetes CronJob secara manual dan memeriksa log output serta status akhir dari proses eksekusi.
 
 \subsection{Refleksi}
 

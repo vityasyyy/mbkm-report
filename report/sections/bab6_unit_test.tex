@@ -22,38 +22,66 @@ Pengujian unit adalah pengujian perangkat lunak yang dilakukan pada unit-unit te
 
 \subsection{Kegiatan}
 
-\subsubsection{Unit Test untuk Tenant Information Tool}
+\subsubsection{Pengujian Unit untuk Modul DE-WR dan DE-WRI}
 
-Penulis menyusun pengujian unit untuk \texttt{tenant\_info\_tool} yang menguji logika pencarian tenant dan penanganan kesalahan. Pengujian dilakukan menggunakan pytest dengan fixture untuk mengisolasi dependensi eksternal seperti API CATAPA.
+Disusun pengujian unit secara menyeluruh untuk modul \texttt{de-wr} dan \texttt{de-wri} yang merupakan komponen utama pada repositori \texttt{de-tools}.
 
-\begin{lstlisting}[caption={Contoh unit test dengan mock untuk tool}]
+\paragraph{DE-WR Tool Testing (100\% coverage)}
+
+Pengujian pada modul \texttt{de-wr} mencakup:
+
+\begin{itemize}
+    \item Google Drive search tool: paginasi server-side dengan cursor-based caching, percabangan \texttt{page\_size}, dan loop \texttt{page\_token}
+    \item Google Docs pagination dan cakupan percabangan \texttt{page\_size}
+    \item Compliance summary email (\texttt{SendComplianceSummaryEmailTool}): beberapa penerima, auto-resolution, validasi filter, dan penerimaan ejaan \textit{quarterly}
+    \item Deteksi laporan kosong: penghitungan placeholder \texttt{(please insert here)} (tepat 7 = kosong), validasi loop pemrosesan batch, dan validasi respons spreadsheet append
+    \item Issue processing agent dan scoring agent: hardened JSON parsing, SQL precedence, dan rescoring idempotency
+\end{itemize}
+
+\paragraph{DE-WRI Comprehensive Testing}
+
+Pengujian pada modul \texttt{de-wri} mencakup 56 unit test untuk \texttt{FetchEmployeeIssuesTool}:
+
+\begin{itemize}
+    \item Validasi model (\texttt{IssueEntry}, \texttt{EmployeeIssues}, \texttt{Config}, \texttt{Output})
+    \item Fungsi database (perhitungan rentang tanggal, pembangunan query, pengelompokan hasil)
+    \item Pengujian keamanan (validasi nama tabel, pencegahan SQL injection)
+    \item Pengujian \texttt{db\_utils} (sanitasi identifier, eksekusi query/write)
+\end{itemize}
+
+Selain unit test, disusun 5 integration test:
+
+\begin{itemize}
+    \item Konektivitas database yang sebenarnya
+    \item Eksekusi query terhadap \texttt{dummy\_weekly\_reports}
+    \item Pengelompokan data dengan record yang sebenarnya
+    \item Eksekusi end-to-end tool
+\end{itemize}
+
+Pengujian tambahan meliputi unit test dan integration test untuk \texttt{SendEmailTool}, pengujian komprehensif manajemen jadwal (CLI create/delete/info, penegakan idempotency), serta pengujian agent dan connector handler. Cakupan 100\% dicapai pada modul \texttt{fetch\_employee\_issues}.
+
+\begin{lstlisting}[caption={Contoh pengujian keamanan dan fungsional pada DE-WR dan DE-WRI}]
 import pytest
 from unittest.mock import MagicMock
-from tools.tenant_info_tool import TenantInfoTool
+from de_wri.tools.send_compliance_summary_email import (
+    SendComplianceSummaryEmailTool,
+)
+from de_wri.utils.query_builder import build_query
 
-def test_tenant_lookup_success():
-    tool = TenantInfoTool()
-    mock_client = MagicMock()
-    mock_client.search.return_value = [
-        {"name": "Catapa", "status": "active"}
-    ]
-    tool.client = mock_client
-    result = tool._run(tenant_name="Catapa")
-    assert result["status"] == "verified"
-    assert result["tenant_name"] == "Catapa"
+def test_sql_injection_prevention():
+    malicious_table = "weekly_reports; DROP TABLE users;--"
+    with pytest.raises(ValueError, match="Invalid table name"):
+        build_query(table_name=malicious_table)
 
-def test_tenant_lookup_not_found():
-    tool = TenantInfoTool()
-    mock_client = MagicMock()
-    mock_client.search.return_value = []
-    tool.client = mock_client
-    with pytest.raises(TenantNotFoundError):
-        tool._run(tenant_name="UnknownTenant")
+def test_compliance_email_multiple_recipients():
+    tool = SendComplianceSummaryEmailTool()
+    result = tool._run(
+        recipients=["mgr1@gl.id", "mgr2@gl.id"],
+        period="weekly",
+        summary_data=mock_summary,
+    )
+    assert len(result["sent_to"]) == 2
 \end{lstlisting}
-
-\subsubsection{Pengujian Evalground Test Package}
-
-Pada repositori \texttt{de-tools}, penulis mengembangkan pengujian untuk modul \texttt{evalground/test\_package.py} yang menangani validasi paket pengujian untuk Digital Employee. Pengujian mencakup skenario parsing data uji, validasi format masukan, dan penanganan kegagalan saat struktur data tidak sesuai.
 
 \subsubsection{Coverage Analysis dan Threshold Enforcement}
 
@@ -69,15 +97,21 @@ omit = [
 ]
 \end{lstlisting}
 
-Penulis secara rutin memantau laporan \texttt{htmlcov/} untuk mengidentifikasi area kode yang belum tercakup pengujian, kemudian menambahkan kasus uji yang sesuai.
+Secara rutin dipantau laporan \texttt{htmlcov/} untuk mengidentifikasi area kode yang belum tercakup pengujian, kemudian menambahkan kasus uji yang sesuai.
 
 \subsubsection{Mocking untuk Agent Dependencies}
 
-Pengujian sub-agen Digital Employee memerlukan pendekatan mock yang cermat karena agen sering kali bergantung pada layanan eksternal (LLM runtime, Google API, CATAPA). Penulis menggunakan fixture pytest berupa mocked MCP server dan mocked agent runtime untuk mensimulasikan perilaku tool tanpa melakukan panggilan jaringan sebenarnya.
+Pengujian sub-agen Digital Employee memerlukan pendekatan mock yang cermat karena agen sering kali bergantung pada layanan eksternal (LLM runtime, Google API, CATAPA). Digunakan fixture pytest berupa mocked MCP server dan mocked agent runtime untuk mensimulasikan perilaku tool tanpa melakukan panggilan jaringan sebenarnya.
 
 \subsection{Refleksi}
 
-Pengujian unit tidak hanya memastikan kebenaran logika, tetapi juga berfungsi sebagai dokumentasi hidup (living documentation) yang menjelaskan ekspektasi dari setiap fungsi. Kesulitan terbesar adalah menentukan batas antara pengujian unit (isolasi) dan pengujian integrasi (interaksi), terutama pada komponen yang sangat bergantung pada konfigurasi runtime seperti agen AI. Pengalaman ini memperkuat pentingnya menulis kode yang dapat diuji sejak awal (testable by design).
+Pengujian unit tidak hanya memastikan kebenaran logika, tetapi juga berfungsi sebagai dokumentasi hidup (\textit{living documentation}) yang menjelaskan ekspektasi dari setiap fungsi. Beberapa temuan penting diperoleh selama proses pengujian:
+
+\begin{itemize}
+    \item Pengujian keamanan (pencegahan SQL injection) menunjukkan bahwa validasi masukan harus diuji seteliti logika bisnis, karena kegagalan validasi input dapat mengakibatkan kerentanan yang tidak terdeteksi oleh pengujian fungsional biasa.
+    \item Pencapaian cakupan 100\% pada tool yang memiliki efek samping (Google Drive API, database query) memerlukan desain mock yang cermat agar pengujian tidak hanya memvalidasi perilaku mock itu sendiri, melainkan benar-benar memverifikasi logika bisnis yang mendasarinya.
+    \item Integration test yang dijalankan terhadap database yang sebenarnya berhasil menemukan masalah yang tidak dapat ditangkap oleh mock, seperti kegagalan insert akibat nilai NULL dan ketidakcocokan tipe data antara model dan skema database.
+\end{itemize}
 
 \clearpage
 

@@ -18,7 +18,7 @@
 
 \subsection{Landasan Teori}
 
-Proof-of-concept (PoC) merupakan prototipe fungsional yang dikembangkan untuk memvalidasi kelayakan teknis suatu solusi sebelum diintegrasikan ke dalam sistem produksi. Dalam konteks AI agent, PoC mencakup validasi kemampuan model bahasa dalam mengekstrak informasi, melakukan inferensi, serta mengorkestrasi alur kerja melalui protokol standar seperti MCP. Retrieval-Augmented Generation (RAG) adalah pendekatan yang menggabungkan pencarian informasi dari basis pengetahuan dengan kemampuan generasi teks model bahasa, sehingga menghasilkan respons yang lebih akurat dan terkini.
+Proof-of-concept (PoC) merupakan prototipe fungsional yang dikembangkan untuk memvalidasi kelayakan teknis suatu solusi sebelum diintegrasikan ke dalam sistem produksi. Dalam konteks AI agent, PoC mencakup validasi kemampuan model bahasa dalam mengekstrak informasi, melakukan inferensi, serta mengorkestrasi alur kerja melalui protokol standar seperti MCP. Selain itu, lingkungan sandbox seperti E2B memungkinkan eksekusi kode yang dihasilkan LLM secara terisolasi, sehingga prototipe dapat diuji tanpa risiko terhadap lingkungan produksi.
 
 \subsection{Kegiatan}
 
@@ -41,41 +41,50 @@ print(json.dumps(issues))
 
 Prototipe ini memungkinkan Digital Employee Weekly Report untuk mengevaluasi kepentingan setiap isu dalam laporan mingguan secara otomatis, tanpa membahayakan lingkungan produksi. Validasi dilakukan dengan membandingkan hasil scoring LLM dengan penilaian manual oleh tim product manager.
 
-\subsubsection{Prototipe RAG Pipeline}
+\subsubsection{E2B Analytics Agent --- Prototipe Laporan MoM Mingguan}
 
-Penulis juga terlibat dalam eksplorasi dan prototipe pipeline RAG melalui \texttt{gl-sdk-cookbook}, khususnya pada sisi gen-ai SDK. Beberapa prototipe yang dikembangkan meliputi:
+Diimplementasikan prototipe E2B Analytics Agent untuk menghasilkan laporan Minutes of Meeting (MoM) mingguan bergaya konsultan Big 4. Prototipe ini memvalidasi empat poin kelayakan teknis: (1) sandbox E2B mampu menjalankan \texttt{matplotlib} dan \texttt{ReportLab Platypus} untuk memproduksi laporan PDF berkualitas produksi; (2) API Meemo dapat berfungsi sebagai sumber data utama untuk analitik pertemuan; (3) LLM dapat mengorkestrasi generasi laporan dan email berbasis prompt di dalam sandbox; serta (4) deployment produksi layak dilakukan dengan konfigurasi timeout dan resilensi yang tepat.
 
-\begin{enumerate}
-    \item \textbf{Semantic Routing}: Membangun router yang mengarahkan pertanyaan pengguna ke pipeline RAG yang sesuai berdasarkan makna semantik query.
-    \item \textbf{Query Transformation}: Mengimplementasikan modul yang menulis ulang query pengguna menjadi bentuk yang lebih optimal untuk pencarian dokumen, meningkatkan kualitas retrieval.
-    \item \textbf{Multimodal Input Handling}: Membuat prototipe yang menerima input selain teks untuk memberikan respons yang lebih kaya.
-    \item \textbf{Caching Mechanism}: Menambahkan lapisan cache pada pipeline retrieval untuk mengurangi latensi dan biaya embedding berulang.
-\end{enumerate}
+\begin{lstlisting}[caption={Pola inti prototipe E2B Analytics Agent}]
+from e2b_code_interpreter import Sandbox
 
-\subsubsection{AI PR Feedback Collector}
-
-Pada repositori \texttt{gdplabs-exploration}, penulis berkontribusi pada pengembangan AI Pull Request Feedback Collector, yaitu tool otomatis yang menganalisis komentar pada pull request GitHub untuk mengekstrak metrik kualitas masukan (feedback) dari penggunaan LLM.
-
-\begin{lstlisting}[caption={Contoh ekstraksi feedback dari komentar PR}]
-def extract_ai_feedback(comments):
-    feedback_entries = []
-    for comment in comments:
-        if "START REVIEW" in comment.body:
-            entry = {
-                "model": extract_model(comment),
-                "caught_by_reviewer": (
-                    "caught by reviewer" in comment.body
-                ),
-            }
-            feedback_entries.append(entry)
-    return feedback_entries
+sandbox = Sandbox(timeout=300)
+result = sandbox.run_code("""
+import matplotlib.pyplot as plt
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+# Generate Big 4 consulting style PDF
+doc = SimpleDocTemplate("mom_report.pdf")
+# ... charts, tables, trends
+doc.build(story)
+""")
 \end{lstlisting}
 
-Prototipe ini membantu tim engineering memahami efektivitas bantuan AI dalam proses review kode, serta mengidentifikasi area di mana model perlu ditingkatkan.
+\subsubsection{Perbaikan Memory Leak pada E2B Issue Processing Runner}
+
+Ditemukan kebocoran memori (memory leak) pada DE-WR E2B issue processing runner selama pelaksanaan tugas scoring berdurasi panjang. Akar penyebab teridentifikasi pada koneksi \texttt{httpx} yang tidak ditutup, sesi klien OpenAI yang menumpuk, serta objek respons yang terakumulasi di memori. Diagnosis dilakukan menggunakan skrip benchmark memori sintetis dengan beban kerja terkendali.
+
+Perbaikan diimplementasikan melalui pengelolaan pool koneksi \texttt{httpx}, pemanggilan \texttt{response.close()} untuk pembersihan eksplisit, \texttt{gc.collect()} untuk pemaksaan garbage collection, pemanggilan metode \texttt{close()} pada klien OpenAI, serta manajemen sesi null. Setelah perbaikan awal, dilakukan penguatan tambahan dengan tahap cleanup lanjutan. Skrip benchmark memori (\texttt{memory\_benchmark.py}) dibuat untuk pengujian regresi, dan skrip diagnostik yang sudah tidak relevan dihapus setelah verifikasi.
+
+\begin{lstlisting}[caption={Perbandingan sebelum dan sesudah perbaikan memory leak}]
+# Sebelum: kebocoran memory
+session = httpx.Client()  # tidak pernah ditutup
+response = session.post(url)  # response body menumpuk
+client = OpenAI()  # client session menumpuk
+
+# Sesudah: cleanup eksplisit
+try:
+    response = session.post(url, timeout=300)
+    result = response.json()
+finally:
+    response.close()
+    session.close()
+    await client.close()
+    gc.collect()
+\end{lstlisting}
 
 \subsection{Refleksi}
 
-Kegiatan prototipe mengajarkan pentingnya validasi teknis sebelum investasi pengembangan penuh. Penggunaan sandbox E2B, misalnya, memperlihatkan bahwa keamanan eksekusi kode tidak boleh dikompromikan demi fleksibilitas AI. Eksplorasi RAG juga membuka wawasan tentang kompleksitas nyata dalam sistem question answering berbasis pengetahuan, yang melibatkan tidak hanya model bahasa tetapi juga desain pipeline retrieval, transformasi query, dan manajemen cache.
+Kegiatan prototipe mengajarkan pentingnya validasi teknis sebelum investasi pengembangan penuh. Penggunaan sandbox E2B, misalnya, memperlihatkan bahwa keamanan eksekusi kode tidak boleh dikompromikan demi fleksibilitas AI. Prototipe E2B Analytics Agent juga memvalidasi bahwa generasi kode yang dieksekusi dalam sandbox mampu memproduksi laporan PDF berkualitas produksi. Selain itu, pengalaman perbaikan memory leak mengajarkan bahwa pembersihan sumber daya pada pipeline AI berdurasi panjang tidak dapat diabaikan, karena kebocoran koneksi yang bersifat subtil akan terakumulasi seiring waktu.
 
 \clearpage
 

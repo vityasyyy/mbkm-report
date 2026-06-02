@@ -28,7 +28,7 @@ Kegiatan pengembangan fitur dan modul proyek dilakukan pada tiga domain utama: D
 
 \subsubsection{Digital Employee Project Manager (Pamela)}
 
-DE-PM adalah agen otomasi untuk manajemen proyek yang terdiri dari enam sub-agen dengan tanggung jawab spesifik. Penulis berkontribusi pada pengembangan:
+DE-PM adalah agen otomasi untuk manajemen proyek yang terdiri dari enam sub-agen dengan tanggung jawab spesifik. Kontribusi diberikan pada pengembangan:
 
 \begin{itemize}
     \item \textbf{Meeting Join Agent}: Memprovisikan bot Meemo ke Google Meet untuk merekam rapat secara otomatis melalui \texttt{meemo\_join\_meeting\_tool}.
@@ -41,7 +41,7 @@ Escalation pada \texttt{issue\_reminder\_tool} menggunakan logika stateful yang 
 
 \subsubsection{Project Manager Datasaur (Knowledge Aggregation DE)}
 
-DE-PM-Datasaur adalah variasi PM untuk tenant Datasaur dengan 15 sub-agen yang mengumpulkan pengetahuan dari Slack, Gmail, Notion, dan Datadog. Penulis berkontribusi pada:
+DE-PM-Datasaur adalah variasi PM untuk tenant Datasaur dengan 15 sub-agen yang mengumpulkan pengetahuan dari Slack, Gmail, Notion, dan Datadog. Kontribusi diberikan pada:
 
 \begin{itemize}
     \item \textbf{MCP Sub-Agent Pattern}: Mengimplementasikan pola di mana setiap MCP (Notion, Slack, Gmail, Datadog) dibungkus dalam sub-agen khusus untuk membatasi akses tool pada skill-router agen.
@@ -63,7 +63,7 @@ DE-Weekly Report adalah agen otomasi yang mengelola laporan mingguan dari tim en
 
 \subsubsection{E2B Sandbox Issue Processing}
 
-Sebagai alternatif scoring berbasis LLM langsung, penulis mengimplementasikan jalur E2B untuk memproses isu di dalam sandbox Python terisolasi:
+Sebagai alternatif scoring berbasis LLM langsung, diimplementasikan jalur E2B untuk memproses isu di dalam sandbox Python terisolasi:
 
 \begin{lstlisting}[caption={Alur E2B Issue Processing dalam Weekly Report}]
 # Jalur paralel dengan ThreadPoolExecutor
@@ -75,23 +75,33 @@ Sebagai alternatif scoring berbasis LLM langsung, penulis mengimplementasikan ja
 # Timeout per tool call: 7200 detik
 \end{lstlisting}
 
+\subsubsection{E2B Analytics Agent untuk Laporan MoM Mingguan}
+
+Diimplementasikan agen analitik berbasis E2B untuk pembuatan laporan Minutes of Meeting (MoM) mingguan secara otomatis. Sumber data utama yang digunakan adalah Meemo, dengan kredensial BOSA yang diperoleh dari \texttt{MEEMO\_MCP\_X\_API\_KEY} dan \texttt{MEEMO\_MCP\_URL}. Eksekusi kode Python di dalam sandbox E2B dilakukan melalui \texttt{Sandbox.run\_code()}, menggantikan pendekatan \texttt{commands.run()} sebelumnya.
+
+\begin{itemize}
+    \item \textbf{Generasi Laporan PDF}: Dihasilkan laporan bergaya konsultan Big 4 menggunakan ReportLab Platypus. Grafik Matplotlib disertakan untuk tren bulanan dan perbandingan MoM. Pembuatan email dilakukan secara prompt-driven. Penamaan PDF menggunakan versi dengan surfacing link Drive. Pengiriman email dan pembagian PDF dilakukan kepada penerima terkait.
+    \item \textbf{Timeout dan Resiliensi}: Parameter \texttt{request\_timeout} diteruskan ke pemanggilan E2B SDK untuk mencegah \textit{default timeout} 60 detik. Override resiliensi \texttt{tool\_timeout\_seconds} disediakan melalui \texttt{tool\_configs}. Timeout minimum dinaikkan dari 180 detik menjadi 300 detik untuk \textit{code interpreter} E2B. Untuk analytics sub-agent, \texttt{timeout\_seconds=1800} diterapkan.
+    \item \textbf{Penjadwalan Mingguan}: Jadwal analitik dikonfigurasi setiap Jumat pukul 17:00 (opsional).
+    \item \textbf{Perbaikan Iteratif}: Dilakukan perbaikan bertahap meliputi error 422 pada pengiriman email, inkonsistensi \textit{action items}, kendala layout, penanganan penerima, pengambilan detail wajib, perbaikan link Drive, dan penyelarasan dengan PRD.
+\end{itemize}
+
 \subsubsection{Digital Employee Weekly Report Issue Reoccuring}
 
-DE-WRI adalah sistem pelacakan isu berulang yang terintegrasi dengan GitHub, terdiri dari dua sub-agen:
+Diimplementasikan sistem pelacakan isu berulang yang terintegrasi dengan GitHub. Pipeline ini dibangun dari awal melalui beberapa tahap pengembangan iteratif.
 
-\begin{enumerate}
-    \item \textbf{Escalation Agent}: Orkestrator pipeline 5 langkah:
-    \begin{enumerate}
-        \item Fetch semua isu 14 hari terakhir melalui \texttt{FetchEmployeeIssuesTool}.
-        \item Deteksi isu berulang lintas minggu menggunakan \texttt{RecurringIssueDetectorTool} dengan \texttt{ExactMatcher} ( \textit{case-insensitive exact string match} ).
-        \item Lookup mapping GitHub untuk pegawai melalui \texttt{LookupGitHubDataTool}.
-        \item Proses setiap isu berulang (create, comment, atau close GitHub issue melalui BOSA connector).
-        \item Kirim notifikasi email melalui \texttt{SendEmailTool}.
-    \end{enumerate}
-    \item \textbf{GitHub DB Sync Agent}: Melakukan sinkronisasi harian antara status isu di basis data dengan status nyata di GitHub API.
-\end{enumerate}
+\begin{itemize}
+    \item \textbf{Inisialisasi Proyek}: Dimulai dengan pipeline berbasis hello world tanpa agen, kemudian ditingkatkan menjadi \textit{deployable pipeline agent} dengan \texttt{gllm\_pipeline.Pipeline} yang dibungkus dalam \texttt{BaseTool} LangChain. Pendekatan TypedDict digantikan dengan Pydantic BaseModel setelah terjadi \textit{runtime validation error} pada AIP (\texttt{State type must be a TypedDict or Pydantic BaseModel}).
+    \item \textbf{FetchEmployeeIssuesTool (Langkah 2)}: Melakukan kueri SQL JOIN \texttt{dummy\_weekly\_reports → employees → organizations} dan mengelompokkan hasil per pegawai beserta isunya. Dilakukan migrasi dari BosaConnector ke GLConnectors SDK. Fitur keamanan yang diimplementasikan meliputi validasi nama tabel dan pencegahan SQL injection. Pengujian mencakup 56 unit test dan 5 integration test dengan cakupan 100\%.
+    \item \textbf{RecurringIssueDetector dengan Strategy Pattern (Langkah 3)}: \texttt{ExactMatcher} melakukan pencocokan string eksak secara \textit{case-insensitive}. Pola strategy memungkinkan ekstensibilitas untuk matcher lain di masa depan (misalnya \texttt{FuzzyMatcher}). Dilakukan perbaikan \textit{bug} kritis: \texttt{issue\_id} dimasukkan ke dalam \textit{tuple} pengelompokan mingguan untuk deteksi isu berulang yang benar.
+    \item \textbf{GitHub Issue Tools (Langkah 4--5)}: Tool monolitik direfaktor menjadi tool terpisah: \texttt{SearchGitHubIssueTool}, \texttt{CommentGitHubIssueTool}, dan \texttt{CloseGitHubIssueTool}. \texttt{LookupGitHubDataTool} menyediakan mapping pegawai ke GitHub. Pemeriksaan status isu GitHub dilakukan sebelum mengeskalkasi catatan yang sudah ada di basis data.
+    \item \textbf{SendEmailTool (Langkah 6)}: Diintegrasikan dengan BOSA \texttt{google\_mail} MCP. Dilengkapi dengan unit test dan integration test.
+    \item \textbf{EscalationOrchestratorTool}: Mengonsolidasikan pipeline 5 langkah ke dalam satu tool orkestrasi. Standarisasi \texttt{get\_tool\_config} dilakukan pada seluruh tool.
+    \item \textbf{Manajemen Penjadwalan}: Diterapkan dukungan manajemen jadwal AIP. Perintah CLI disediakan untuk pembuatan, penghapusan, dan informasi jadwal. Manajemen jadwal bersifat idempoten untuk mencegah \textit{overwrite bug}. Jadwal mingguan dikonfigurasi setiap Minggu pukul 10:00. Penegakan \textit{trigger phrase} diterapkan untuk eksekusi terjadwal.
+    \item \textbf{Peningkatan Arsitektur}: Diterapkan pola coordinator dengan sub-agen (Escalation Agent + GitHub DB Sync Agent). \texttt{GLBaseTool} direfaktor menjadi fungsi utilitas. Konfigurasi dipusatkan. Fungsi utilitas basis data dipusatkan dengan sanitasi identifier. Kueri SQL dieksternalisasi ke berkas \texttt{.sql} kemudian dire-embed untuk kompatibilitas AIP.
+\end{itemize}
 
-Skenario keputusan untuk setiap isu berulang:
+Berikut merupakan keluaran dari pipeline \texttt{EscalationOrchestratorTool} yang menggambarkan skenario keputusan untuk setiap isu berulang:
 
 \begin{lstlisting}[caption={Decision tree untuk isu berulang}]
 # Untuk setiap isu berulang:

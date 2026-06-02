@@ -26,7 +26,7 @@ GDP Labs mengembangkan GL-IAM SDK, sebuah kit perangkat lunak yang menyediakan a
 
 \subsubsection{Integrasi FastAPI dengan GL-IAM SDK}
 
-Penulis mengimplementasikan beberapa contoh integrasi GL-IAM dengan framework FastAPI sebagai bagian dari \texttt{gl-iam-cookbook}. Integrasi ini mencakup endpoint yang terlindungi oleh berbagai level otorisasi, mulai dari autentikasi pengguna dasar hingga validasi agent delegation token.
+Diimplementasikan beberapa contoh integrasi GL-IAM dengan framework FastAPI sebagai bagian dari \texttt{gl-iam-cookbook}. Integrasi ini mencakup endpoint yang terlindungi oleh berbagai level otorisasi, mulai dari autentikasi pengguna dasar hingga validasi agent delegation token.
 
 \begin{lstlisting}[caption={Inisialisasi IAM Gateway pada FastAPI (lifespan)}]
 from contextlib import asynccontextmanager
@@ -61,7 +61,7 @@ Endpoint-endpoint yang dibuat meliputi:
 
 \subsubsection{Manajemen API Key dengan Hierarki Scope}
 
-Penulis mengimplementasikan sistem manajemen API key berbasis hierarki tiga tingkat: PLATFORM, ORGANIZATION, dan PERSONAL. API key pada tingkat yang lebih atas dapat menurunkan scope-nya ke dalam child key dengan batasan waktu hidup (lifetime) yang lebih sempit.
+Diimplementasikan sistem manajemen API key berbasis hierarki tiga tingkat: PLATFORM, ORGANIZATION, dan PERSONAL. API key pada tingkat yang lebih atas dapat menurunkan scope-nya ke dalam child key dengan batasan waktu hidup (lifetime) yang lebih sempit.
 
 \begin{lstlisting}[caption={Pembuatan API key dengan scope inheritance}]
 # Create organization key
@@ -107,9 +107,34 @@ delegation = await gateway.delegate_to_agent(
 )
 \end{lstlisting}
 
+\subsubsection{Optimisasi Atomicitas pada \texttt{create\_user\_with\_password}}
+
+Implementasi awal \texttt{IAMGateway.create\_user\_with\_password()} menggunakan atomicitas semu (fake atomicity): pembuatan pengguna dan pemasangan kata sandi dilakukan dalam transaksi terpisah yang dibungkus \texttt{try/except} dengan rollback manual. Apabila \texttt{set\_user\_password()} gagal setelah baris pengguna telah terkomit ke basis data, pengguna tanpa kredensial (orphan user) tertinggal dalam basis data.
+
+Solusi yang diterapkan memindahkan tanggung jawab atomicitas dari IAMGateway ke level penyedia (\texttt{PostgreSQLUserStoreMixin}). Metode \texttt{create\_user\_with\_password} ditambahkan ke protokol \texttt{UserStoreProvider} dengan fallback dua langkah secara default, sehingga penyedia tanpa kata sandi lokal tidak terdampak. \texttt{PostgreSQLUserStoreMixin} meng-override metode tersebut dengan implementasi atomik menggunakan satu sesi dan satu komit: baris pengguna, baris kredensial, \textit{external identity}, dan peran semuanya dikomit dalam satu transaksi. IAMGateway cukup mendelegasikan ke penyedia, menghilangkan mekanisme rollback yang kompleks.
+
+Sebagai jaring pengaman tambahan, ditambahkan rollback pada IAMGateway: jika \texttt{set\_user\_password()} gagal, pengguna yang sudah dibuat akan dihapus. Perilaku ini diuji melalui \texttt{test\_create\_user\_with\_password\_rollback\_on\_failure} dan \texttt{test\_create\_user\_with\_password\_rollback\_continues\_on\_error}.
+
+Perubahan pendukung lainnya meliputi penambahan field \texttt{external\_identity} pada \texttt{UserCreateInput} (\texttt{exclude=True}, diakses via \texttt{to\_dict()} untuk dukungan JIT provisioning), penanganan \texttt{InvalidCredentialsError} pada gateway (dipetakan ke \texttt{VALIDATION\_ERROR}), pembaruan 8 pengujian gateway, serta penambahan \texttt{pyright} untuk pemeriksaan tipe LSP.
+
+\begin{lstlisting}[caption={Implementasi atomic \texttt{create\_user\_with\_password} pada \texttt{PostgreSQLUserStoreMixin}}]
+# PostgreSQLUserStoreMixin: single-session atomic
+async def create_user_with_password(self, input: UserCreateInput):
+    async with self.session() as session:
+        user = User(**input.to_dict(exclude={"password"}))
+        session.add(user)
+        credential = Credential(user_id=user.id, ...)
+        session.add(credential)
+        if input.external_identity:
+            ext = ExternalIdentity(user_id=user.id, ...)
+            session.add(ext)
+        await session.commit()
+        return user
+\end{lstlisting}
+
 \subsubsection{Deployment dengan Docker dan Helm}
 
-Penulis berkontribusi pada perbaikan pipeline Docker di repositori Digital Employee, khususnya multi-stage build yang memisahkan tahap build dari tahap runtime (image minimal dengan pengguna non-root).
+Diberikan kontribusi pada perbaikan pipeline Docker di repositori Digital Employee, khususnya multi-stage build yang memisahkan tahap build dari tahap runtime (image minimal dengan pengguna non-root).
 
 \begin{lstlisting}[caption={Konfigurasi Dockerfile multi-stage}]
 # Builder stage
@@ -130,11 +155,11 @@ USER catapa
 ENTRYPOINT ["./entrypoint.sh"]
 \end{lstlisting}
 
-Selain itu, penulis berpartisipasi dalam pembaruan tag image (berbasis hash komit Git) dan penyesuaian variabel konfigurasi dalam ConfigMap dan Secret terenkripsi GPG untuk deployment Helm ke Kubernetes.
+Selain itu, Dilakukan partisipasi dalam pembaruan tag image (berbasis hash komit Git) dan penyesuaian variabel konfigurasi dalam ConfigMap dan Secret terenkripsi GPG untuk deployment Helm ke Kubernetes.
 
 \subsection{Refleksi}
 
-Pengembangan backend di GDP Labs mengajarkan pentingnya arsitektur terpisah (separation of concerns) dalam skala enterprise. SDK GL-IAM sangat menarik karena tidak hanya menyederhanakan autentikasi, tetapi juga memikirkan skenario keamanan seperti scope narrowing pada delegation dan rotasi kunci partner SSO. Pengalaman ini juga memperkuat pemahaman tentang deployment dengan Docker multi-stage dan Helm yang memungkinkan perbedaan konfigurasi tanpa mengubah kode aplikasi.
+Pengembangan backend di GDP Labs mengajarkan pentingnya arsitektur terpisah (separation of concerns) dalam skala enterprise. SDK GL-IAM sangat menarik karena tidak hanya menyederhanakan autentikasi, tetapi juga memikirkan skenario keamanan seperti scope narrowing pada delegation dan rotasi kunci partner SSO. Pengalaman ini juga memperkuat pemahaman tentang deployment dengan Docker multi-stage dan Helm yang memungkinkan perbedaan konfigurasi tanpa mengubah kode aplikasi. Selain itu, optimalisasi atomicitas pada \texttt{create\_user\_with\_password} menunjukkan bahwa pendekatan ``cukup baik'' (rollback \texttt{try/except}) sebaiknya diganti dengan solusi yang secara arsitektural benar (transaksi level basis data), memperkuat prinsip separation of concerns di mana tanggung jawab atomicitas seharusnya berada di l penyedia data, bukan di gateway.
 
 \clearpage
 
