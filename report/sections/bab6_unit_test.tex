@@ -1,5 +1,5 @@
 %BAB VI: HARDSKILL - PENGUJIAN UNIT DAN MODUL PROYEK
-\section{MBKM -- Hardskill: Pengujian Unit dan Modul Proyek}
+\section{MBKM Hardskill: Pengujian Unit dan Modul Proyek}
 
 \begin{table}[H]
     \centering
@@ -11,81 +11,59 @@
         \textbf{Mata Kuliah} & : Internship: Pengujian Unit dan Modul Proyek \\
         \textbf{Kode MK} & : MII21-3015 \\
         \textbf{Total SKS} & : 3 SKS \\
-        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs: Digital Employee \\
         \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
     \end{tabular}
 \end{table}
 
 \subsection{Landasan Teori}
 
-Pengujian unit adalah pengujian perangkat lunak yang dilakukan pada unit-unit terkecil (biasanya fungsi atau metode) secara terisolasi untuk memastikan bahwa setiap unit berperilaku sesuai ekspektasi. Prinsip pengujian unit yang baik mencakup isolasi eksternal menggunakan mock, skenario positif dan negatif, serta cakupan pengujian yang cukup. Threshold cakupan (coverage threshold) yang ditetapkan GDP Labs untuk proyek Digital Employee adalah tinggi, mendorong tim untuk menulis pengujian yang menyeluruh pada logika bisnis maupun integrasi antar modul.
+Pengujian unit dilakukan pada unit terkecil (fungsi atau metode) secara terisolasi untuk memastikan perilaku sesuai ekspektasi. Praktik yang saya gunakan mencakup isolasi dependensi eksternal dengan mock, skenario positif dan negatif, serta analisis cakupan (coverage). Tim Digital Employee menetapkan threshold cakupan yang tinggi, sehingga setiap tool baru harus disertai pengujian yang menyeluruh.
 
 \subsection{Kegiatan}
 
-\subsubsection{Pengujian Unit untuk Modul DE-WR dan DE-WRI}
+\subsubsection{Pengujian Unit untuk Modul DE-WR}
 
-Disusun pengujian unit secara menyeluruh untuk modul \texttt{de-wr} dan \texttt{de-wri} yang merupakan komponen utama pada repositori \texttt{de-tools}.
-
-\paragraph{DE-WR Tool Testing (100\% coverage)}
-
-Pengujian pada modul \texttt{de-wr} mencakup:
+Pengujian pada modul \texttt{digital-employee-weekly-report} mencakup:
 
 \begin{itemize}
-    \item Google Drive search tool: paginasi server-side dengan cursor-based caching, percabangan \texttt{page\_size}, dan loop \texttt{page\_token}
-    \item Google Docs pagination dan cakupan percabangan \texttt{page\_size}
-    \item Compliance summary email (\texttt{SendComplianceSummaryEmailTool}): beberapa penerima, auto-resolution, validasi filter, dan penerimaan ejaan \textit{quarterly}
-    \item Deteksi laporan kosong: penghitungan placeholder \texttt{(please insert here)} (tepat 7 = kosong), validasi loop pemrosesan batch, dan validasi respons spreadsheet append
-    \item Issue processing agent dan scoring agent: hardened JSON parsing, SQL precedence, dan rescoring idempotency
+    \item \textbf{Google Drive search tool}: paginasi server-side dengan cursor-based caching, percabangan \texttt{page\_size}, dan loop \texttt{page\_token}, hingga cakupan 100\%.
+    \item \textbf{Google Docs pagination}: cakupan percabangan \texttt{page\_size}.
+    \item \textbf{Compliance summary email} (\texttt{SendComplianceSummaryEmailTool}): beberapa penerima, auto-resolution, validasi filter, dan penerimaan ejaan \textit{quarterly}.
+    \item \textbf{Deteksi laporan kosong}: penghitungan placeholder \texttt{(please insert here)} (tepat 7 berarti kosong), validasi loop pemrosesan batch, dan validasi respons spreadsheet append.
+    \item \textbf{Issue processing agent}: hardened JSON parsing, SQL precedence, dan rescoring idempotency.
 \end{itemize}
 
-\paragraph{DE-WRI Comprehensive Testing}
+\subsubsection{Pengujian Unit dan Integrasi untuk Modul DE-WRI}
 
-Pengujian pada modul \texttt{de-wri} mencakup 56 unit test untuk \texttt{FetchEmployeeIssuesTool}:
+Untuk \texttt{FetchEmployeeIssuesTool} pada modul DE-WRI, saya menyusun 56 unit test dan 5 integration test dengan cakupan 100\% pada modul \texttt{fetch\_employee\_issues}:
 
 \begin{itemize}
-    \item Validasi model (\texttt{IssueEntry}, \texttt{EmployeeIssues}, \texttt{Config}, \texttt{Output})
-    \item Fungsi database (perhitungan rentang tanggal, pembangunan query, pengelompokan hasil)
-    \item Pengujian keamanan (validasi nama tabel, pencegahan SQL injection)
-    \item Pengujian \texttt{db\_utils} (sanitasi identifier, eksekusi query/write)
+    \item \textbf{Unit test}: validasi model (\texttt{IssueEntry}, \texttt{EmployeeIssues}, \texttt{Config}, \texttt{Output}), fungsi basis data (perhitungan rentang tanggal, pembangunan query, pengelompokan hasil), pengujian keamanan (validasi nama tabel, pencegahan SQL injection), dan pengujian \texttt{db\_utils} (sanitasi identifier, eksekusi query/write).
+    \item \textbf{Integration test}: konektivitas basis data sungguhan, eksekusi query terhadap \texttt{dummy\_weekly\_reports}, pengelompokan data dengan record nyata, dan eksekusi tool end-to-end.
 \end{itemize}
 
-Selain unit test, disusun 5 integration test:
+Pengujian tambahan mencakup unit test dan integration test untuk \texttt{SendEmailTool}, pengujian manajemen jadwal CLI (create/delete/info dengan penegakan idempotency), serta pengujian agent dan connector handler.
 
-\begin{itemize}
-    \item Konektivitas database yang sebenarnya
-    \item Eksekusi query terhadap \texttt{dummy\_weekly\_reports}
-    \item Pengelompokan data dengan record yang sebenarnya
-    \item Eksekusi end-to-end tool
-\end{itemize}
-
-Pengujian tambahan meliputi unit test dan integration test untuk \texttt{SendEmailTool}, pengujian komprehensif manajemen jadwal (CLI create/delete/info, penegakan idempotency), serta pengujian agent dan connector handler. Cakupan 100\% dicapai pada modul \texttt{fetch\_employee\_issues}.
-
-\begin{lstlisting}[caption={Contoh pengujian keamanan dan fungsional pada DE-WR dan DE-WRI}]
+\begin{lstlisting}[caption={Contoh pengujian keamanan pada DE-WRI}]
 import pytest
-from unittest.mock import MagicMock
-from de_wri.tools.send_compliance_summary_email import (
-    SendComplianceSummaryEmailTool,
+
+from digital_employee_weekly_report_issue_reoccuring.connectors.tools.utils.db_utils import (
+    validate_table_name,
 )
-from de_wri.utils.query_builder import build_query
 
 def test_sql_injection_prevention():
     malicious_table = "weekly_reports; DROP TABLE users;--"
     with pytest.raises(ValueError, match="Invalid table name"):
-        build_query(table_name=malicious_table)
-
-def test_compliance_email_multiple_recipients():
-    tool = SendComplianceSummaryEmailTool()
-    result = tool._run(
-        recipients=["mgr1@gl.id", "mgr2@gl.id"],
-        period="weekly",
-        summary_data=mock_summary,
-    )
-    assert len(result["sent_to"]) == 2
+        validate_table_name(
+            malicious_table,
+            allowed_tables=frozenset({"weekly_reports"}),
+        )
 \end{lstlisting}
 
 \subsubsection{Coverage Analysis dan Threshold Enforcement}
 
-Pengujian dijalankan menggunakan perintah \texttt{pytest -n 4} untuk eksekusi paralel, dengan alat \texttt{pytest-cov} untuk melaporkan cakupan kode. Konfigurasi pada \texttt{pyproject.toml} mengatur direktori dan file yang dikecualikan dari perhitungan cakupan, termasuk \texttt{main.py}, file migrasi, dan file terkait Docker.
+Pengujian dijalankan dengan \texttt{pytest -n 4} untuk eksekusi paralel dan \texttt{pytest-cov} untuk melaporkan cakupan. Konfigurasi pada \texttt{pyproject.toml} mengecualikan \texttt{main.py}, file migrasi, dan file terkait Docker dari perhitungan cakupan:
 
 \begin{lstlisting}[caption={Konfigurasi pytest-cov pada pyproject.toml}]
 [tool.coverage.run]
@@ -97,21 +75,16 @@ omit = [
 ]
 \end{lstlisting}
 
-Secara rutin dipantau laporan \texttt{htmlcov/} untuk mengidentifikasi area kode yang belum tercakup pengujian, kemudian menambahkan kasus uji yang sesuai.
+Laporan \texttt{htmlcov/} saya pantau secara rutin untuk menemukan area yang belum tercakup, lalu menambahkan kasus uji yang sesuai.
 
 \subsubsection{Mocking untuk Agent Dependencies}
 
-Pengujian sub-agen Digital Employee memerlukan pendekatan mock yang cermat karena agen sering kali bergantung pada layanan eksternal (LLM runtime, Google API, CATAPA). Digunakan fixture pytest berupa mocked MCP server dan mocked agent runtime untuk mensimulasikan perilaku tool tanpa melakukan panggilan jaringan sebenarnya.
+Sub-agen Digital Employee bergantung pada layanan eksternal (LLM runtime, Google API, CATAPA), sehingga pengujiannya membutuhkan mock yang cermat. Saya menggunakan fixture pytest berupa mocked MCP server dan mocked agent runtime untuk mensimulasikan perilaku tool tanpa panggilan jaringan yang sebenarnya.
 
 \subsection{Refleksi}
 
-Pengujian unit tidak hanya memastikan kebenaran logika, tetapi juga berfungsi sebagai dokumentasi hidup (\textit{living documentation}) yang menjelaskan ekspektasi dari setiap fungsi. Beberapa temuan penting diperoleh selama proses pengujian:
+Pengujian keamanan (pencegahan SQL injection) menunjukkan bahwa validasi input harus diuji seteliti logika bisnis; kegagalan validasi dapat menjadi kerentanan yang tidak terdeteksi oleh pengujian fungsional biasa. Mencapai cakupan 100\% pada tool yang memanggil Google Drive API atau database membutuhkan desain mock yang jujur: yang diuji harus logika tool, bukan perilaku mock itu sendiri.
 
-\begin{itemize}
-    \item Pengujian keamanan (pencegahan SQL injection) menunjukkan bahwa validasi masukan harus diuji seteliti logika bisnis, karena kegagalan validasi input dapat mengakibatkan kerentanan yang tidak terdeteksi oleh pengujian fungsional biasa.
-    \item Pencapaian cakupan 100\% pada tool yang memiliki efek samping (Google Drive API, database query) memerlukan desain mock yang cermat agar pengujian tidak hanya memvalidasi perilaku mock itu sendiri, melainkan benar-benar memverifikasi logika bisnis yang mendasarinya.
-    \item Integration test yang dijalankan terhadap database yang sebenarnya berhasil menemukan masalah yang tidak dapat ditangkap oleh mock, seperti kegagalan insert akibat nilai NULL dan ketidakcocokan tipe data antara model dan skema database.
-\end{itemize}
+Integration test terhadap database sungguhan menemukan masalah yang tidak tertangkap mock, misalnya kegagalan insert karena nilai NULL dan ketidakcocokan tipe data antara model dan skema database. Dari pengalaman itu, saya sekarang selalu melengkapi unit test dengan minimal satu integration test untuk modul yang menyentuh database.
 
 \clearpage
-

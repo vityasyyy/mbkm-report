@@ -1,26 +1,25 @@
 %BAB I: PENDAHULUAN
 \section{Pendahuluan}
 
-Dokumen ini merupakan laporan akhir kegiatan magang dan pembelajaran yang dilaksanakan secara hybrid di PT Sumber Cipta Multiniaga (GDP Labs) selama periode Semester 6 Tahun Akademik 2025/2026, sebagai implementasi program Merdeka Belajar Kampus Merdeka (MBKM). Kegiatan ini bertujuan untuk memberikan pengalaman industri yang relevan dengan program studi Ilmu Komputer, khususnya dalam pengembangan sistem berbasis kecerdasan buatan (AI), manajemen identitas dan akses (IAM), serta praktik rekayasa perangkat lunak di lingkungan perusahaan teknologi.
+Dokumen ini merupakan laporan akhir kegiatan magang dan pembelajaran yang dilaksanakan secara hybrid di PT Sumber Cipta Multiniaga (GDP Labs) selama Semester 6 Tahun Akademik 2025/2026, sebagai implementasi program Merdeka Belajar Kampus Merdeka (MBKM). Kegiatan ini memberikan pengalaman industri di bidang pengembangan sistem berbasis kecerdasan buatan (AI), manajemen identitas dan akses (IAM), serta rekayasa perangkat lunak di lingkungan perusahaan teknologi.
 
 \subsection{Profil Perusahaan}
 
-PT Sumber Cipta Multiniaga, yang beroperasi dengan nama dagang \textit{GDP Labs}, merupakan perusahaan teknologi yang berfokus pada pengembangan solusi berbasis kecerdasan buatan dan otomasi untuk kebutuhan enterprise. Perusahaan ini merupakan bagian dari ekosistem GDP yang melayani berbagai klien dalam dan luar negeri di bidang Human Resource Management System (HRMS), AI agent platform, serta solusi data dan analitik.
+PT Sumber Cipta Multiniaga, yang beroperasi dengan nama dagang \textit{GDP Labs}, adalah perusahaan teknologi yang fokus pada pengembangan solusi berbasis kecerdasan buatan dan otomasi untuk kebutuhan enterprise. Perusahaan ini bagian dari ekosistem GDP yang melayani berbagai klien dalam dan luar negeri di bidang Human Resource Management System (HRMS), AI agent platform, serta solusi data dan analitik.
 
-GDP Labs mengembangkan platform \textbf{Digital Employee (DE)}, yaitu sistem agen otomasi berbasis AI yang dirancang untuk mengotomatisasi alur kerja bisnis melalui orkestrasi agen-agen cerdas. Platform ini dijalankan dalam lingkungan AI runtime dan terintegrasi dengan Model Context Protocol (MCP) untuk mendukung eksekusi agen secara modular dan terstandarisasi. Selain itu, GDP Labs juga mengembangkan \textbf{GL-IAM SDK}, yaitu kit pengembangan perangkat lunak untuk manajemen identitas dan akses yang mendukung autentikasi, otorisasi, dan single sign-on (SSO) antar layanan.
+GDP Labs mengembangkan platform \textbf{Digital Employee (DE)}, yaitu sistem agen otomasi berbasis AI yang dirancang untuk mengotomatisasi alur kerja bisnis melalui orkestrasi agen cerdas. Platform ini berjalan pada runtime AIP dan terintegrasi dengan Model Context Protocol (MCP) untuk eksekusi agen yang modular dan terstandarisasi. Selain itu, GDP Labs mengembangkan \textbf{GL-IAM SDK}, kit perangkat lunak untuk manajemen identitas dan akses yang mendukung autentikasi, otorisasi, dan single sign-on (SSO) antar layanan.
 
 \subsection{Kegiatan Magang}
 
-Selama periode magang dari tanggal \textbf{9 Februari 2026 hingga 22 Juni 2026}, ditempatkan dalam tim Software Engineering yang bertanggung jawab atas pengembangan dan pemeliharaan platform Digital Employee serta GL-IAM SDK. Kegiatan magang meliputi:
+Selama periode magang dari tanggal \textbf{9 Februari 2026 hingga 22 Juni 2026}, saya ditempatkan di tim Software Engineering yang bertanggung jawab atas pengembangan dan pemeliharaan platform Digital Employee serta GL-IAM. Kegiatan magang meliputi:
 
 \begin{enumerate}
-    \item \textbf{Pengembangan Fitur dan Modul Proyek}: Merancang dan mengimplementasikan tools dan modul inti untuk berbagai jenis Digital Employee, termasuk agent customer service, weekly report processing, dan project management automation.
-    \item \textbf{Implementasi Prototipe Produk}: Membangun proof-of-concept untuk skenario penggunaan agen AI dalam lingkungan sandbox (E2B), pembuatan prototipe E2B analytics agent untuk laporan MoM mingguan, serta perbaikan memory leak pada E2B issue processing runner.
-    \item \textbf{Pengembangan Backend}: Mengembangkan sisi backend menggunakan Python dan FastAPI, membangun API, mengelola komunikasi antar layanan, mengimplementasikan skema autentikasi dan otorisasi berbasis JWT, serta merancang arsitektur deployment dengan Docker dan Helm.
-    \item \textbf{Pengujian Unit dan Modul}: Menyusun dan menjalankan pengujian unit untuk seluruh modul yang dikembangkan, dengan target cakupan pengujian (test coverage) yang tinggi.
-    \item \textbf{Pengujian Integrasi dan Sistem}: Melaksanakan pengujian integrasi antar komponen sistem, termasuk validasi alur kerja end-to-end melalui pengujian otomatis dengan Playwright serta validasi pipeline CI/CD.
-    \item \textbf{Pengembangan Soft Skill}: Berpartisipasi dalam aktivitas kolaborasi tim menggunakan metodologi Agile/Scrum, termasuk daily stand-up, perencanaan sprint, code review, serta pengelolaan proyek melalui GitHub.
+    \item \textbf{Pengembangan Fitur dan Modul Proyek}: Membangun pipeline deteksi dan eskalasi isu berulang (DE-WRI) dari nol, mengembangkan tool dan sub-agen pada Digital Employee Weekly Report dan Project Manager, termasuk E2B analytics agent untuk laporan MoM mingguan.
+    \item \textbf{Implementasi Prototipe Produk}: Membangun proof-of-concept untuk skenario agen AI dalam lingkungan sandbox (E2B), termasuk pipeline biweekly PR feedback, dan memperbaiki memory leak pada E2B issue processing runner.
+    \item \textbf{Pengembangan Backend}: Mengkontribusikan perbaikan pada GL-IAM SDK dan cookbook-nya, seperti atomicitas operasi pembuatan pengguna, hierarki API key, dan tutorial DPoP Keycloak, serta merefaktor tool DE-PM dari sesi MCP ke GLConnectors SDK dan menangani deployment Helm.
+    \item \textbf{Pengujian Unit dan Modul}: Menyusun dan menjalankan pengujian unit untuk modul yang dikembangkan, dengan target cakupan pengujian (test coverage) yang tinggi.
+    \item \textbf{Pengujian Integrasi dan Sistem}: Melaksanakan pengujian integrasi antar komponen, termasuk pengujian end-to-end dengan Playwright serta validasi deployment ke lingkungan dev dan prod.
+    \item \textbf{Pengembangan Soft Skill}: Berpartisipasi dalam kolaborasi tim dengan metodologi Agile/Scrum, termasuk daily stand-up, sprint planning, code review, dan pengelolaan proyek melalui GitHub.
 \end{enumerate}
 
 \newpage
-

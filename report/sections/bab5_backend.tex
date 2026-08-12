@@ -1,5 +1,5 @@
 %BAB V: HARDSKILL - PENGEMBANGAN BACKEND
-\section{MBKM -- Hardskill: Pengembangan Backend}
+\section{MBKM Hardskill: Pengembangan Backend}
 
 \begin{table}[H]
     \centering
@@ -11,111 +11,29 @@
         \textbf{Mata Kuliah} & : Internship: Pengembangan Backend \\
         \textbf{Kode MK} & : MII21-3014 \\
         \textbf{Total SKS} & : 4 SKS \\
-        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs: Digital Employee \\
         \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
     \end{tabular}
 \end{table}
 
 \subsection{Landasan Teori}
 
-Pengembangan backend dalam konteks Digital Employee mencakup perancangan dan implementasi layanan yang mendukung orkestrasi agen AI, autentikasi, manajemen data, serta komunikasi antar mikro-layanan. Arsitektur yang diterapkan menggunakan pola clean architecture dan dependency injection, yang memisahkan logika bisnis dari infrastruktur teknis. Identity and Access Management (IAM) merupakan komponen kritis yang menjamin setiap permintaan (request) ke sistem tervalidasi dan berwenang sesuai peran (role) pengguna atau agen.
+Backend Digital Employee menangani orkestrasi agen AI, autentikasi, manajemen data, dan komunikasi antar layanan. Identity and Access Management (IAM) menjadi komponen kritis karena setiap permintaan ke sistem harus tervalidasi dan sesuai peran (role) pengguna atau agen.
 
-GDP Labs mengembangkan GL-IAM SDK, sebuah kit perangkat lunak yang menyediakan abstraksi SIMI (Single Interface Multiple Implementation) untuk manajemen identitas dan akses. SDK ini mendukung berbagai penyedia autentikasi (PostgreSQL, Keycloak, Stack Auth) melalui satu gateway interface yang sama, sehingga aplikasi tidak perlu menulis ulang kode autentikasi ketika penyedia diganti.
+GDP Labs mengembangkan GL-IAM SDK, kit perangkat lunak yang menyediakan abstraksi SIMI (Single Interface Multiple Implementation) untuk manajemen identitas dan akses. SDK ini mendukung berbagai penyedia autentikasi (PostgreSQL, Keycloak, Stack Auth) melalui satu interface yang sama, sehingga aplikasi tidak perlu menulis ulang kode autentikasi ketika penyedia diganti.
 
 \subsection{Kegiatan}
 
-\subsubsection{Integrasi FastAPI dengan GL-IAM SDK}
+\subsubsection{Atomicitas \texttt{create\_user\_with\_password} di GL-IAM SDK}
 
-Diimplementasikan beberapa contoh integrasi GL-IAM dengan framework FastAPI sebagai bagian dari \texttt{gl-iam-cookbook}. Integrasi ini mencakup endpoint yang terlindungi oleh berbagai level otorisasi, mulai dari autentikasi pengguna dasar hingga validasi agent delegation token.
+Kontribusi utama saya pada backend adalah perbaikan atomicitas operasi \texttt{IAMGateway.create\_user\_with\_password()} di repositori \texttt{gl-sdk}. Implementasi awal memakai atomicitas semu: pembuatan pengguna dan pemasangan kata sandi dilakukan dalam transaksi terpisah yang dibungkus \texttt{try/except} dengan rollback manual. Jika \texttt{set\_user\_password()} gagal setelah baris pengguna terkomit, tersisa pengguna tanpa kredensial (orphan user) di basis data.
 
-\begin{lstlisting}[caption={Inisialisasi IAM Gateway pada FastAPI (lifespan)}]
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from gl_iam import IAMGateway
-from gl_iam.providers import PostgreSQLProvider, PostgreSQLConfig
+Perbaikan dilakukan dalam dua tahap:
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    config = PostgreSQLConfig(
-        host="localhost",
-        database="iam_db",
-        user="postgres",
-        password="secret",
-    )
-    provider = PostgreSQLProvider(config)
-    gateway = IAMGateway.from_fullstack_provider(provider)
-    set_iam_gateway(gateway)
-    yield
-    await provider.close()
-
-app = FastAPI(lifespan=lifespan)
-\end{lstlisting}
-
-Endpoint-endpoint yang dibuat meliputi:
-
-\begin{itemize}
-    \item \texttt{GET /profile} -- profil pengguna yang terautentikasi melalui \texttt{get\_current\_user}.
-    \item \texttt{GET /admin/dashboard} -- endpoint khusus admin menggunakan \texttt{require\_org\_admin()}.
-    \item \texttt{GET /agent/documents} -- endpoint untuk agen terdelegasi menggunakan \texttt{get\_current\_agent} dan \texttt{require\_agent\_scope("docs:read")}.
-\end{itemize}
-
-\subsubsection{Manajemen API Key dengan Hierarki Scope}
-
-Diimplementasikan sistem manajemen API key berbasis hierarki tiga tingkat: PLATFORM, ORGANIZATION, dan PERSONAL. API key pada tingkat yang lebih atas dapat menurunkan scope-nya ke dalam child key dengan batasan waktu hidup (lifetime) yang lebih sempit.
-
-\begin{lstlisting}[caption={Pembuatan API key dengan scope inheritance}]
-# Create organization key
-org_key = await gateway.api_key_provider.create_key(
-    name="prod-api-key",
-    key_type="ORGANIZATION",
-    owner_id=org_id,
-    scopes=["api:read", "api:write", "users:manage"],
-)
-
-# Child key -- subset of parent scope, with expiry
-child_key = await gateway.api_key_provider.create_key(
-    name="service-temp-key",
-    key_type="PERSONAL",
-    parent_key_id=org_key.id,
-    scopes=["api:read"],
-    expires_at=datetime.utcnow() + timedelta(days=7),
-)
-\end{lstlisting}
-
-\subsubsection{Agent Delegasi dan Cross-Service Validation}
-
-Salah satu kontribusi utama adalah implementasi sistem agent delegation di mana pengguna dapat mendelegasikan sebagian scope-nya kepada agen AI. Agen tersebut kemudian membawa delegation token (JWT) yang dapat divalidasi di layanan lain menggunakan shared secret dan basis data PostgreSQL yang sama.
-
-\begin{lstlisting}[caption={Registrasi agen dan pemberian delegation token}]
-# Register agent
-registration = AgentRegistration(
-    name="weekly-report-agent",
-    agent_type=AgentType.WORKER,
-    owner_user_id=user.id,
-    allowed_scopes=["reports:read", "reports:write"],
-)
-result = await gateway.register_agent(registration)
-
-# Delegate to agent
-task = TaskContext(id="task-001", purpose="generate_weekly_report")
-scope = DelegationScope(scopes=["reports:read"], expires_in_seconds=3600)
-delegation = await gateway.delegate_to_agent(
-    principal_token=raw_jwt,
-    agent_id=agent_id,
-    task=task,
-    scope=scope,
-)
-\end{lstlisting}
-
-\subsubsection{Optimisasi Atomicitas pada \texttt{create\_user\_with\_password}}
-
-Implementasi awal \texttt{IAMGateway.create\_user\_with\_password()} menggunakan atomicitas semu (fake atomicity): pembuatan pengguna dan pemasangan kata sandi dilakukan dalam transaksi terpisah yang dibungkus \texttt{try/except} dengan rollback manual. Apabila \texttt{set\_user\_password()} gagal setelah baris pengguna telah terkomit ke basis data, pengguna tanpa kredensial (orphan user) tertinggal dalam basis data.
-
-Solusi yang diterapkan memindahkan tanggung jawab atomicitas dari IAMGateway ke level penyedia (\texttt{PostgreSQLUserStoreMixin}). Metode \texttt{create\_user\_with\_password} ditambahkan ke protokol \texttt{UserStoreProvider} dengan fallback dua langkah secara default, sehingga penyedia tanpa kata sandi lokal tidak terdampak. \texttt{PostgreSQLUserStoreMixin} meng-override metode tersebut dengan implementasi atomik menggunakan satu sesi dan satu komit: baris pengguna, baris kredensial, \textit{external identity}, dan peran semuanya dikomit dalam satu transaksi. IAMGateway cukup mendelegasikan ke penyedia, menghilangkan mekanisme rollback yang kompleks.
-
-Sebagai jaring pengaman tambahan, ditambahkan rollback pada IAMGateway: jika \texttt{set\_user\_password()} gagal, pengguna yang sudah dibuat akan dihapus. Perilaku ini diuji melalui \texttt{test\_create\_user\_with\_password\_rollback\_on\_failure} dan \texttt{test\_create\_user\_with\_password\_rollback\_continues\_on\_error}.
-
-Perubahan pendukung lainnya meliputi penambahan field \texttt{external\_identity} pada \texttt{UserCreateInput} (\texttt{exclude=True}, diakses via \texttt{to\_dict()} untuk dukungan JIT provisioning), penanganan \texttt{InvalidCredentialsError} pada gateway (dipetakan ke \texttt{VALIDATION\_ERROR}), pembaruan 8 pengujian gateway, serta penambahan \texttt{pyright} untuk pemeriksaan tipe LSP.
+\begin{enumerate}
+    \item \textbf{Rollback pada gateway}: Jika \texttt{set\_user\_password()} gagal, pengguna yang baru dibuat langsung dihapus. Perilaku ini diuji melalui \texttt{test\_create\_user\_with\_password\_rollback\_on\_failure} dan \texttt{test\_create\_user\_with\_password\_rollback\_continues\_on\_error}.
+    \item \textbf{Atomicitas di level penyedia}: Tanggung jawab atomicitas dipindahkan dari IAMGateway ke \texttt{PostgreSQLUserStoreMixin}. Metode \texttt{create\_user\_with\_password} ditambahkan ke protokol \texttt{UserStoreProvider} dengan fallback dua langkah secara default, sehingga penyedia tanpa kata sandi lokal tidak terdampak. \texttt{PostgreSQLUserStoreMixin} meng-override-nya dengan implementasi atomik satu sesi dan satu komit: baris pengguna, kredensial, external identity, dan peran dikomit dalam satu transaksi. IAMGateway cukup mendelegasikan ke penyedia, tanpa mekanisme rollback yang rumit.
+\end{enumerate}
 
 \begin{lstlisting}[caption={Implementasi atomic \texttt{create\_user\_with\_password} pada \texttt{PostgreSQLUserStoreMixin}}]
 # PostgreSQLUserStoreMixin: single-session atomic
@@ -132,34 +50,33 @@ async def create_user_with_password(self, input: UserCreateInput):
         return user
 \end{lstlisting}
 
-\subsubsection{Deployment dengan Docker dan Helm}
+Perubahan pendukung lainnya: penambahan field \texttt{external\_identity} pada \texttt{UserCreateInput} (diakses via \texttt{to\_dict()} untuk dukungan JIT provisioning), penanganan \texttt{InvalidCredentialsError} di gateway (dipetakan ke \texttt{VALIDATION\_ERROR}), pembaruan 8 pengujian gateway, serta penambahan \texttt{pyright} untuk pemeriksaan tipe LSP. Perubahan ini dirangkum dalam PR \#3645.
 
-Diberikan kontribusi pada perbaikan pipeline Docker di repositori Digital Employee, khususnya multi-stage build yang memisahkan tahap build dari tahap runtime (image minimal dengan pengguna non-root).
+\subsubsection{GL-IAM Cookbook: API Key Hierarchy dan Tutorial DPoP}
 
-\begin{lstlisting}[caption={Konfigurasi Dockerfile multi-stage}]
-# Builder stage
-FROM python:3.12-slim AS builder
-WORKDIR /app
-COPY pyproject.toml uv.lock ./
-RUN pip install uv && uv sync
-COPY . .
-RUN make test && make lint
+Pada repositori \texttt{gl-iam-cookbook}, saya berkontribusi pada beberapa contoh integrasi:
 
-# Runtime stage
-FROM python:3.12-slim AS runtime
-RUN useradd --create-home --shell /bin/bash catapa
-WORKDIR /app
-COPY --from=builder /app/.venv ./.venv
-COPY --chown=catapa:catapa . .
-USER catapa
-ENTRYPOINT ["./entrypoint.sh"]
-\end{lstlisting}
+\begin{itemize}
+    \item \textbf{API Key Hierarchy}: Menyempurnakan contoh hierarki API key tiga tingkat (PLATFORM, ORGANIZATION, PERSONAL) di mana key tingkat atas dapat menurunkan scope-nya ke child key dengan batas waktu hidup yang lebih sempit. Saya memperbaiki provisioning organisasi agar \texttt{organization\_id} yang belum ada di tabel organisasi tidak menyebabkan kegagalan (PR \#6).
+    \item \textbf{Registration role provisioning}: Memperbaiki provisioning role pada registrasi pengguna PostgreSQL dan menambahkan klarifikasi pembuatan tim dengan peran user pada Stack Auth.
+    \item \textbf{DPoP Keycloak Tutorial}: Menulis tutorial end-to-end demonstrasi proof-of-possession (DPoP) dengan Keycloak, termasuk penanganan error yang jelas saat koneksi gagal, penghapusan kunci yang tidak sengaja ter-commit, serta penyesuaian path \texttt{pyproject.toml} (PR \#7).
+\end{itemize}
 
-Selain itu, Dilakukan partisipasi dalam pembaruan tag image (berbasis hash komit Git) dan penyesuaian variabel konfigurasi dalam ConfigMap dan Secret terenkripsi GPG untuk deployment Helm ke Kubernetes.
+\subsubsection{Deployment Digital Employee dengan Helm}
+
+Saya berpartisipasi dalam proses deployment aplikasi Digital Employee ke lingkungan dev dan prod melalui pull request deploy yang menggerakkan pipeline CI/CD. Kontribusi teknis di sisi konfigurasi meliputi:
+
+\begin{itemize}
+    \item Menyelaraskan template ConfigMap dan Secret Helm dengan nilai dev, termasuk membalikkan konfigurasi placeholder GLC yang salah.
+    \item Menata ulang \texttt{.env.example} dengan seksi Legacy untuk variabel MCP yang masih dipakai, dan menghapus default variabel \texttt{GL\_CONNECTORS\_API\_KEY}/\texttt{TOKEN} yang tidak lagi diperlukan setelah migrasi GLConnectors.
+\end{itemize}
+
+Dengan pemisahan antara kode aplikasi dan nilai konfigurasi, perubahan variabel lingkungan tidak memerlukan perubahan kode maupun rebuild image.
 
 \subsection{Refleksi}
 
-Pengembangan backend di GDP Labs mengajarkan pentingnya arsitektur terpisah (separation of concerns) dalam skala enterprise. SDK GL-IAM sangat menarik karena tidak hanya menyederhanakan autentikasi, tetapi juga memikirkan skenario keamanan seperti scope narrowing pada delegation dan rotasi kunci partner SSO. Pengalaman ini juga memperkuat pemahaman tentang deployment dengan Docker multi-stage dan Helm yang memungkinkan perbedaan konfigurasi tanpa mengubah kode aplikasi. Selain itu, optimalisasi atomicitas pada \texttt{create\_user\_with\_password} menunjukkan bahwa pendekatan ``cukup baik'' (rollback \texttt{try/except}) sebaiknya diganti dengan solusi yang secara arsitektural benar (transaksi level basis data), memperkuat prinsip separation of concerns di mana tanggung jawab atomicitas seharusnya berada di l penyedia data, bukan di gateway.
+Perbaikan atomicitas \texttt{create\_user\_with\_password} mengajarkan bahwa solusi yang tampak cukup (rollback \texttt{try/except}) belum tentu benar secara arsitektural. Memindahkan tanggung jawab atomicitas ke penyedia data, tempat transaksi sebenarnya terjadi, menghasilkan kode yang lebih sederhana dan perilaku yang benar, sesuai prinsip separation of concerns. Pengalaman ini juga menunjukkan pentingnya menulis test untuk skenario kegagalan parsial, bukan hanya jalur sukses.
+
+Dari pekerjaan di cookbook, saya belajar bahwa contoh integrasi sama pentingnya dengan SDK itu sendiri: dokumentasi yang jelas tentang provisioning role dan batasan waktu API key menyelamatkan pengguna dari kegagalan yang sulit didiagnosis.
 
 \clearpage
-

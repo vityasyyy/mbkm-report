@@ -1,5 +1,5 @@
 %BAB VIII: SOFTSKILL - KEMAMPUAN BEKERJASAMA DAN KOLABORASI
-\section{MBKM -- Softskill: Kemampuan Bekerjasama dan Kolaborasi}
+\section{MBKM Softskill: Kemampuan Bekerjasama dan Kolaborasi}
 
 \begin{table}[H]
     \centering
@@ -11,34 +11,35 @@
         \textbf{Mata Kuliah} & : Soft Skill: Kemampuan Bekerjasama dan Kolaborasi \\
         \textbf{Kode MK} & : MII21-4012 \\
         \textbf{Total SKS} & : 2 SKS \\
-        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs: Digital Employee \\
         \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
     \end{tabular}
 \end{table}
 
 \subsection{Metodologi Kolaborasi}
 
-Tim Software Engineering GDP Labs mengadopsi metodologi Agile/Scrum dalam pengembangan perangkat lunak. Setiap sprint biasanya berdurasi dua hingga empat minggu, dengan aktivitas rutin meliputi daily stand-up meeting (15 menit), sprint planning, sprint review, dan retrospective. Selain itu, setiap perubahan kode (fitur atau perbaikan) wajib dikirim melalui pull request (PR) di GitHub dan direview oleh setidaknya satu rekan tim sebelum dapat di-merge.
+Tim Software Engineering GDP Labs menggunakan metodologi Agile/Scrum. Sprint berdurasi dua hingga empat minggu dengan aktivitas rutin: daily stand-up (15 menit), sprint planning, sprint review, dan retrospective. Setiap perubahan kode dikirim melalui pull request (PR) di GitHub dan direview oleh setidaknya satu rekan tim sebelum di-merge.
 
 \subsection{Kegiatan}
 
 \subsubsection{Daily Stand-up dan Sprint Planning}
 
-Setiap pagi, tim engineering mengadakan daily stand-up untuk menyampaikan progress kemarin, rencana hari ini, serta hambatan yang dihadapi. Kegiatan ini memudahkan deteksi dini terhadap hambatan teknis (blockers) dan memungkinkan rekan tim untuk menawarkan bantuan secara proaktif. Selama sprint planning, dilakukan kolaborasi dengan Product Manager dan tim QA dalam memprioritaskan backlog dan menentukan estimasi kompleksitas tugas (story points).
+Setiap pagi tim mengadakan daily stand-up untuk menyampaikan progress kemarin, rencana hari ini, dan hambatan yang dihadapi. Kegiatan ini membuat blocker teknis terlihat lebih awal, sehingga rekan tim bisa menawarkan bantuan. Pada sprint planning, saya berdiskusi dengan Product Manager dan tim QA untuk memprioritaskan backlog dan memperkirakan kompleksitas tugas.
 
 \subsubsection{Code Review dan PR Workflow}
 
-Setiap fitur yang dikembangkan dikirim melalui PR di GitHub dengan deskripsi yang jelas, mencakup konteks perubahan, daftar file yang dimodifikasi, dan screenshot atau log hasil pengujian jika relevan. Selain review manual oleh rekan tim, GDP Labs juga menggunakan AI-powered PR review agent (pr-agent) yang memberikan masukan awal terkait gaya kode, potensi bug, dan kesesuaian dengan konvensi proyek.
+Setiap PR yang saya buat menyertakan deskripsi berisi konteks perubahan, daftar file yang dimodifikasi, dan hasil pengujian yang relevan. Saya aktif menerima dan memberikan review. GDP Labs juga memakai AI-powered PR review agent (pr-agent) yang memberikan masukan awal soal gaya kode dan potensi bug, tetapi keputusan akhir tetap dipegang reviewer manusia.
 
-Dilakukan partisipasi aktif dalam memberikan dan menerima code review, yang membiasakan komunikasi teknis yang konstruktif, penerimaan terhadap kritik (growth mindset), serta pemahaman bahwa kode adalah tanggung jawab kolektif tim, bukan individu.
+Beberapa review yang saya terima mengubah cara saya menulis kode. Misalnya, feedback untuk mengeksternalkan query SQL ke file \texttt{.sql}, menyatukan fungsi basis data, dan memastikan setiap tool menangani konfigurasi yang hilang secara eksplisit. Saya juga mendapat review yang menuntut test coverage penuh pada tool yang menyentuh API eksternal, yang kemudian menjadi kebiasaan saya.
 
 \subsubsection{GitHub Projects dan Task Tracking}
 
-Proyek dikelola melalui GitHub Projects dengan kolom-kolom status: To Do, In Progress, In Review, Done. Selama magang, secara aktif diperbarui status tugas, menambahkan komentar pada issue terkait, serta menjelaskan alasan teknis setiap keputusan dalam thread diskusi. Fungsi GitHub Issues juga digunakan untuk melacak bug, perencanaan fitur, dan diskusi desain bersama tim.
+Proyek dikelola melalui GitHub Projects dengan kolom To Do, In Progress, In Review, dan Done. Saya memperbarui status tugas secara rutin, menambahkan komentar pada issue terkait, dan menjelaskan alasan teknis setiap keputusan di thread diskusi.
 
 \subsection{Refleksi}
 
-Kolaborasi dalam lingkungan tim Agile memerlukan lebih dari sekadar kemampuan teknis; diperlukan komunikasi transparan, empati terhadap perspektif orang lain, dan kesadaran bahwa hambatan tim adalah prioritas bersama. Code review, meskipun sering kali menantang secara emosional, ternyata menjadi instrumen belajar yang sangat efektif untuk memahami kualitas kode dan best practices yang diterapkan rekan-rekan senior. Pengalaman ini memperkuat keyakinan bahwa perangkat lunak berkualitas tinggi dibangun oleh tim, bukan oleh individu tunggal.
+Kolaborasi dalam tim Agile tidak hanya soal kemampuan teknis. Komunikasi yang transparan soal progress dan blocker, serta keberanian untuk bertanya ketika belum paham, lebih sering menjadi penentu kelancaran sprint daripada kemampuan individu. Code review adalah instrumen belajar yang paling efektif selama magang: banyak pola yang saya pakai sekarang, seperti sanitasi identifier dan penanganan timeout eksplisit, saya pelajari dari review rekan senior.
+
+Pengalaman ini memperkuat keyakinan saya bahwa perangkat lunak berkualitas dibangun oleh tim, dan bahwa menerima kritik atas kode tidak sama dengan dikritik secara personal.
 
 \clearpage
-

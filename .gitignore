@@ -1,12 +1,38 @@
-*.aux
-*.log
-*.out
-*.toc
-*.fdb_latexmk
-*.fls
-*.synctex.gz
-*.bbl
-*.blg
-*.run.xml
-*.bcf
+# LaTeX Build Artifacts (any depth)
+**/*.aux
+**/*.log
+**/*.out
+**/*.toc
+**/*.lof
+**/*.lot
+**/*.fls
+**/*.fdb_latexmk
+**/*.synctex.gz
+**/*.bbl
+**/*.blg
+**/*.glo
+**/*.idx
+**/*.ind
+**/*.ilg
+**/*.ist
+**/*.loa
+**/*.vrb
+**/*.nav
+**/*.snm
+**/*.xdv
+
+# Compiled PDFs (dikompilasi oleh CI dan dirilis di GitHub Releases)
+report/main.pdf
+presentation/build/
+
+# OS & Editor files
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Internal / planning
+.opencode/

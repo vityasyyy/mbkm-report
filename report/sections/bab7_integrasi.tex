@@ -1,5 +1,5 @@
 %BAB VII: HARDSKILL - PENGUJIAN INTEGRASI DAN SISTEM
-\section{MBKM -- Hardskill: Pengujian Integrasi dan Sistem}
+\section{MBKM Hardskill: Pengujian Integrasi dan Sistem}
 
 \begin{table}[H]
     \centering
@@ -11,50 +11,46 @@
         \textbf{Mata Kuliah} & : Internship: Pengujian Integrasi dan Sistem \\
         \textbf{Kode MK} & : MII21-3016 \\
         \textbf{Total SKS} & : 3 SKS \\
-        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs: Digital Employee \\
         \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
     \end{tabular}
 \end{table}
 
 \subsection{Landasan Teori}
 
-Pengujian integrasi bertujuan memverifikasi bahwa komponen-komponen perangkat lunak yang telah lolos pengujian unit dapat berinteraksi dengan benar ketika digabungkan. Pengujian sistem meluas lebih jauh untuk memastikan seluruh aplikasi berfungsi sebagai satu kesatuan dalam lingkungan yang menyerupai produksi. Dalam konteks Digital Employee, pengujian integrasi mencakup validasi alur agen (coordinator ke sub-agen ke tools ke MCP ke API eksternal), sementara pengujian sistem mencakup validasi pipeline CI/CD dan deployment end-to-end.
+Pengujian integrasi memverifikasi bahwa komponen yang sudah lolos pengujian unit dapat berinteraksi dengan benar ketika digabungkan. Pada Digital Employee, pengujian integrasi mencakup alur agen dari coordinator ke sub-agen, tool, MCP, hingga API eksternal. Pengujian sistem memastikan aplikasi berfungsi sebagai satu kesatuan di lingkungan yang menyerupai produksi, termasuk pipeline CI/CD dan deployment.
 
 \subsection{Kegiatan}
 
-\subsubsection{Playwright End-to-End Testing}
+\subsubsection{Playwright End-to-End Testing untuk Alur MoM}
 
-Tim engineering GDP Labs menggunakan Playwright (TypeScript) sebagai kerangka pengujian end-to-end untuk antarmuka dan alur kerja Digital Employee. Kontribusi dilakukan pada tiga area proyek pengujian, yang masing-masing diuraikan berikut ini.
+Tim engineering GDP Labs memakai Playwright (TypeScript) untuk pengujian end-to-end antarmuka Digital Employee. Saya mengembangkan pengujian untuk alur kerja Minutes of Meeting (MoM) di aplikasi DE-PM (PR \#629): pengecekan integrasi Meemo, pengambilan daftar rapat, pencarian dokumen MoM di Google Drive, konversi dokumen ke HTML, dan pengiriman email kepada peserta. Pengujian ini memakai skenario yang disiapkan sebelumnya dan sepenuhnya otomatis, dari penyiapan data hingga validasi hasil akhir.
 
-\paragraph{DE-PM MoM Workflow E2E Tests.}
+\subsubsection{Playwright End-to-End Testing untuk DE-PM-Datasaur}
 
-Pengujian end-to-end dikembangkan untuk alur kerja Minutes of Meeting (MoM) secara menyeluruh: pengecekan integrasi Meemo, pengambilan daftar rapat, pencarian dokumen MoM di Google Drive, konversi dokumen ke HTML, dan pengiriman email kepada para peserta. Skenario pengujian integrasi juga ditambahkan untuk proyek-proyek CATAPA, GLAIR, GLC, dan DSO.
+Untuk DE-PM-Datasaur, saya melakukan scaffolding proyek Playwright beserta kerangka pendukungnya (PR \#745):
 
-Sejumlah perbaikan dilakukan selama pengembangan. Pemasangan parameter (\textit{parameter nesting}) diperbaiki, misalnya \texttt{time\_min} menjadi \texttt{request.body.timeMin}, agar permintaan API sesuai dengan skema yang diharapkan. Selain itu, umpan balik dari tinjauan kode berbantuan AI (\textit{AI code review}) diresolusi, mencakup perbaikan keamanan berupa ketidakcocokan tipe variabel lingkungan pada \texttt{DEFAULT\_RECIPIENT\_FILTER} serta perbaikan performa berupa penambahan konstanta \texttt{POLL\_INTERVAL} dan \texttt{MAX\_WAIT} guna menghindari pembanjiran server API (\textit{API server overwhelming}).
+\begin{itemize}
+    \item \texttt{globalSetup} dan \texttt{globalTeardown} untuk penyiapan dan pembersihan data pengujian secara otomatis.
+    \item Page objects dan test fixtures untuk antarmuka Slack, termasuk \texttt{slack-page.ts} yang mengabstraksi interaksi dengan panel Slack.
+    \item Data seed skenario (\texttt{seed.py} + \texttt{scenarios.json}) dan helper MCP untuk meniru respons backend pada skenario end-to-end.
+    \item Satu spec utama \texttt{datasaur\_pm\_e2e.spec.ts} yang mengeksekusi skenario, seperti merangkum thread Slack dan email, lalu memverifikasi hasilnya melalui keyword yang diharapkan.
+\end{itemize}
 
-\paragraph{DE-PM-Datasaur E2E Tests.}
+\subsubsection{Konsolidasi Integration Test DE-PM}
 
-Untuk proyek ini, dilakukan scaffolding proyek Playwright beserta kerangka pendukung pengujian (\textit{test support framework}). Page objects dan test fixtures untuk antarmuka Slack diimplementasikan guna mempermudah penulisan pengujian yang terstruktur. Infrastruktur pengisian dan pembersihan data pengujian secara otomatis (\textit{automated test data seeding and cleanup}) juga dibangun.
+Di akhir masa magang, saya merefaktor kumpulan integration test DE-PM yang sebelumnya terpisah per proyek menjadi pola env-driven single-agent (PR \#903). Satu pola pengujian yang didorong oleh konfigurasi lingkungan kini digunakan untuk semua proyek, sehingga menambah skenario tidak berarti menambah boilerplate test baru.
 
-Dua cacat (\textit{bug}) signifikan ditemukan dan diperbaiki melalui pengujian ini, yaitu kebocoran panel utas (\textit{thread panel leakage}) dan \textit{race condition} pada status \textit{thinking} agen. Sebagai bagian dari perbaikan, dialog notifikasi Slack kini ditutup secara otomatis sebelum interaksi dengan panel utas dilakukan.
+\subsubsection{Deployment dan Validasi Pipeline CI/CD}
 
-\paragraph{DE-PM PM 008 Integration Tests.}
+Selama magang saya terlibat langsung dalam alur deployment Digital Employee melalui pull request deploy yang memicu pipeline CI/CD, baik ke lingkungan dev maupun prod. Saya menangani beberapa kegagalan pipeline yang disebabkan inkonsistensi lingkungan, misalnya konfigurasi variabel yang tertinggal setelah migrasi GLConnectors, dan menyesuaikan nilai Helm (ConfigMap/Secret) agar sesuai dengan kedua lingkungan.
 
-Pengujian integrasi spesifik proyek ditambahkan untuk proyek CATAPA, GLAIR, GLC, dan DSO, meliputi skenario rapat masing-masing proyek. Ekspektasi terhadap \textit{tool} yang digunakan agen diselaraskan dengan perilaku agen yang sebenarnya, mengoreksi ketidaksesuaian dari rancangan awal. Berkas \texttt{pyrightconfig.json} juga ditambahkan untuk mendukung pemeriksaan tipe (\textit{type checking}) pada basis kode TypeScript.
-
-\subsubsection{CI/CD Pipeline Integration Tests}
-
-Pipeline \texttt{build-python-services.yaml} menjalankan pengujian integrasi setiap kali ada pull request atau merge ke branch \texttt{develop} atau \texttt{main}. Pipeline ini menggunakan self-hosted runner AWS EC2 yang terhubung ke layanan internal (PostgreSQL, Elasticsearch, RabbitMQ).
-
-Secara rutin ditinjau hasil pengujian pipeline dan menyelidiki kegagalan yang terjadi akibat inkonsistensi lingkungan, misalnya perbedaan versi Elasticsearch atau masalah autentikasi ke AWS ECR. Aktivitas ini mencakup interpretasi log CI, replikasi masalah secara lokal, dan perbaikan berupa pembaruan variabel lingkungan atau penyesuaian urutan boot layanan.
-
-\subsubsection{Validasi Deployment End-to-End}
-
-Setelah deployment ke lingkungan demo atau prod, Dilakukan validasi manual dan otomatis untuk memastikan Digital Employee dapat menjalankan siklus penuh: menerima instruksi, mengorkestrasi agen, memanggil tools, mengembalikan hasil. Validasi dilakukan dengan memicu job Kubernetes CronJob secara manual dan memeriksa log output serta status akhir dari proses eksekusi.
+Validasi setelah deployment dilakukan dengan memicu job Kubernetes CronJob secara manual dan memeriksa log output serta status akhir eksekusi, untuk memastikan agen dapat menjalankan siklus penuh: menerima instruksi, mengorkestrasi sub-agen, memanggil tool, dan mengembalikan hasil.
 
 \subsection{Refleksi}
 
-Pengujian integrasi dan sistem memperlihatkan bahwa kesalahan yang tidak terdeteksi dalam pengujian unit sering kali baru muncul pada interaksi antar komponen, terutama pada sistem terdistribusi dengan banyak dependensi eksternal. Pengalaman mengatasi kegagalan pipeline CI/CD juga mengajarkan pentingnya dokumentasi lingkungan dan reproducible builds. Selain itu, koordinasi dengan tim infra GDP Labs selama investigasi masalah memperkuat kemampuan komunikasi teknis lintas tim.
+Dari pengujian end-to-end saya belajar bahwa scaffolding yang baik (global setup, fixtures, data seeding) menentukan kecepatan penulisan skenario berikutnya. Saat saya pertama kali menulis spec MoM, sebagian besar waktu habis untuk menyiapkan data dan menunggu respons bot; setelah infrastruktur seed dan polling dibuat, menambah skenario menjadi pekerjaan yang cepat.
+
+Penanganan kegagalan pipeline CI/CD membuat saya memahami pentingnya dokumentasi lingkungan: perbedaan nilai konfigurasi antara dev dan prod adalah penyebab kegagalan yang paling sering, dan sulit ditemukan tanpa menyamakan sumber kebenaran konfigurasi.
 
 \clearpage
-

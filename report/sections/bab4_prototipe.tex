@@ -1,5 +1,5 @@
 %BAB IV: HARDSKILL - IMPLEMENTASI PROTOTIPE PRODUK
-\section{MBKM -- Hardskill: Implementasi Prototipe Produk}
+\section{MBKM Hardskill: Implementasi Prototipe Produk}
 
 \begin{table}[H]
     \centering
@@ -11,20 +11,20 @@
         \textbf{Mata Kuliah} & : Internship: Implementasi Prototipe Produk \\
         \textbf{Kode MK} & : MII21-3013 \\
         \textbf{Total SKS} & : 4 SKS \\
-        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs: Digital Employee \\
         \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
     \end{tabular}
 \end{table}
 
 \subsection{Landasan Teori}
 
-Proof-of-concept (PoC) merupakan prototipe fungsional yang dikembangkan untuk memvalidasi kelayakan teknis suatu solusi sebelum diintegrasikan ke dalam sistem produksi. Dalam konteks AI agent, PoC mencakup validasi kemampuan model bahasa dalam mengekstrak informasi, melakukan inferensi, serta mengorkestrasi alur kerja melalui protokol standar seperti MCP. Selain itu, lingkungan sandbox seperti E2B memungkinkan eksekusi kode yang dihasilkan LLM secara terisolasi, sehingga prototipe dapat diuji tanpa risiko terhadap lingkungan produksi.
+Prototipe dalam konteks AI agent bertujuan memvalidasi kelayakan teknis suatu solusi sebelum diintegrasikan ke produksi: apakah model bahasa sanggup mengekstrak informasi, melakukan inferensi, dan mengorkestrasi alur kerja melalui protokol seperti MCP. Sandbox seperti E2B menyediakan lingkungan eksekusi Python yang terisolasi untuk menjalankan kode hasil LLM tanpa risiko terhadap produksi.
 
 \subsection{Kegiatan}
 
 \subsubsection{E2B Sandbox untuk Issue Scoring}
 
-Salah satu prototipe yang diimplementasikan adalah sistem penilaian isu (issue scoring) menggunakan lingkungan sandbox E2B (Environment to Build). Sandbox ini menyediakan lingkungan eksekusi Python yang terisolasi dan aman untuk menjalankan kode yang dihasilkan oleh model bahasa besar (LLM) selama proses analisis isu.
+Salah satu prototipe yang saya kerjakan adalah sistem penilaian isu (issue scoring) untuk Digital Employee Weekly Report menggunakan sandbox E2B (Environment to Build). Kode Python yang dihasilkan LLM dijalankan di dalam sandbox terisolasi selama proses analisis isu.
 
 \begin{lstlisting}[caption={Konfigurasi dan eksekusi di E2B sandbox}]
 from e2b_code_interpreter import Sandbox
@@ -39,11 +39,11 @@ print(json.dumps(issues))
 """)
 \end{lstlisting}
 
-Prototipe ini memungkinkan Digital Employee Weekly Report untuk mengevaluasi kepentingan setiap isu dalam laporan mingguan secara otomatis, tanpa membahayakan lingkungan produksi. Validasi dilakukan dengan membandingkan hasil scoring LLM dengan penilaian manual oleh tim product manager.
+Prototipe ini memungkinkan DE-WR mengevaluasi kepentingan setiap isu pada laporan mingguan secara otomatis tanpa membahayakan lingkungan produksi. Hasil scoring LLM divalidasi dengan membandingkannya terhadap penilaian manual oleh tim product manager.
 
-\subsubsection{E2B Analytics Agent --- Prototipe Laporan MoM Mingguan}
+\subsubsection{E2B Analytics Agent: Prototipe Laporan MoM Mingguan}
 
-Diimplementasikan prototipe E2B Analytics Agent untuk menghasilkan laporan Minutes of Meeting (MoM) mingguan bergaya konsultan Big 4. Prototipe ini memvalidasi empat poin kelayakan teknis: (1) sandbox E2B mampu menjalankan \texttt{matplotlib} dan \texttt{ReportLab Platypus} untuk memproduksi laporan PDF berkualitas produksi; (2) API Meemo dapat berfungsi sebagai sumber data utama untuk analitik pertemuan; (3) LLM dapat mengorkestrasi generasi laporan dan email berbasis prompt di dalam sandbox; serta (4) deployment produksi layak dilakukan dengan konfigurasi timeout dan resilensi yang tepat.
+Saya juga membangun prototipe E2B Analytics Agent untuk menghasilkan laporan Minutes of Meeting (MoM) mingguan bergaya konsultan Big 4. Prototipe ini memvalidasi empat poin kelayakan teknis: (1) sandbox E2B sanggup menjalankan \texttt{matplotlib} dan \texttt{ReportLab Platypus} untuk memproduksi PDF berkualitas produksi; (2) API Meemo dapat dipakai sebagai sumber data utama untuk analitik pertemuan; (3) LLM dapat mengorkestrasi generasi laporan dan email berbasis prompt di dalam sandbox; serta (4) deployment produksi layak dilakukan dengan konfigurasi timeout dan resiliensi yang tepat.
 
 \begin{lstlisting}[caption={Pola inti prototipe E2B Analytics Agent}]
 from e2b_code_interpreter import Sandbox
@@ -61,9 +61,9 @@ doc.build(story)
 
 \subsubsection{Perbaikan Memory Leak pada E2B Issue Processing Runner}
 
-Ditemukan kebocoran memori (memory leak) pada DE-WR E2B issue processing runner selama pelaksanaan tugas scoring berdurasi panjang. Akar penyebab teridentifikasi pada koneksi \texttt{httpx} yang tidak ditutup, sesi klien OpenAI yang menumpuk, serta objek respons yang terakumulasi di memori. Diagnosis dilakukan menggunakan skrip benchmark memori sintetis dengan beban kerja terkendali.
+Saya menemukan kebocoran memori (memory leak) pada DE-WR E2B issue processing runner saat menangani tugas scoring berdurasi panjang. Akar penyebabnya adalah koneksi \texttt{httpx} yang tidak ditutup, sesi klien OpenAI yang menumpuk, dan objek respons yang terakumulasi di memori. Diagnosis saya lakukan dengan skrip benchmark memori sintetis (\texttt{memory\_benchmark.py}) dengan beban kerja terkendali.
 
-Perbaikan diimplementasikan melalui pengelolaan pool koneksi \texttt{httpx}, pemanggilan \texttt{response.close()} untuk pembersihan eksplisit, \texttt{gc.collect()} untuk pemaksaan garbage collection, pemanggilan metode \texttt{close()} pada klien OpenAI, serta manajemen sesi null. Setelah perbaikan awal, dilakukan penguatan tambahan dengan tahap cleanup lanjutan. Skrip benchmark memori (\texttt{memory\_benchmark.py}) dibuat untuk pengujian regresi, dan skrip diagnostik yang sudah tidak relevan dihapus setelah verifikasi.
+Perbaikan dilakukan dengan mengelola pool koneksi \texttt{httpx}, memanggil \texttt{response.close()} untuk pembersihan eksplisit, \texttt{gc.collect()} untuk memaksa garbage collection, menutup klien OpenAI, serta manajemen sesi null. Setelah perbaikan awal, saya menambah tahap cleanup lanjutan. \texttt{memory\_benchmark.py} dipertahankan sebagai test regresi, dan skrip diagnostik yang sudah tidak relevan dihapus (PR \#814).
 
 \begin{lstlisting}[caption={Perbandingan sebelum dan sesudah perbaikan memory leak}]
 # Sebelum: kebocoran memory
@@ -82,9 +82,22 @@ finally:
     gc.collect()
 \end{lstlisting}
 
+\subsubsection{Pipeline Biweekly PR AI Feedback (gdplabs-exploration)}
+
+Di luar monorepo Digital Employee, saya mengerjakan repositori eksplorasi \texttt{gdplabs-exploration} yang berisi pipeline untuk memberikan umpan balik berbasis AI terhadap pull request secara biweekly. Pipeline ini mengambil daftar PR dari GitHub via GraphQL, menghitung metrik review (durasi dalam business hours, keberadaan test, dan data mentah PR), lalu mengirimkan ringkasan melalui email dengan lampiran di Google Drive. Fitur utamanya:
+
+\begin{itemize}
+    \item \textbf{Modul terpisah}: Domain logic, data pipeline, dan metrik diekstrak ke submodul tersendiri, dengan klien GitHub GraphQL yang dipakai bersama.
+    \item \textbf{Pemrosesan paralel}: PR diproses paralel di dalam recorder dengan orchestrator yang ramping.
+    \item \textbf{Autentikasi Drive}: Autentikasi dipindah dari OAuth ke service account + Shared Drive, sehingga pipeline dapat berjalan tanpa interaksi pengguna.
+    \item \textbf{Test suite dan dokumentasi}: Dilengkapi test suite komprehensif hasil dari review feedback, serta \texttt{USERGUIDE.md} untuk setup dan operasional.
+    \item \textbf{Perbaikan bug}: Proses pengembangan mencakup perbaikan 10 bug kritis pada analyzer PR dan pembersihan dependensi yang tidak terpakai.
+\end{itemize}
+
 \subsection{Refleksi}
 
-Kegiatan prototipe mengajarkan pentingnya validasi teknis sebelum investasi pengembangan penuh. Penggunaan sandbox E2B, misalnya, memperlihatkan bahwa keamanan eksekusi kode tidak boleh dikompromikan demi fleksibilitas AI. Prototipe E2B Analytics Agent juga memvalidasi bahwa generasi kode yang dieksekusi dalam sandbox mampu memproduksi laporan PDF berkualitas produksi. Selain itu, pengalaman perbaikan memory leak mengajarkan bahwa pembersihan sumber daya pada pipeline AI berdurasi panjang tidak dapat diabaikan, karena kebocoran koneksi yang bersifat subtil akan terakumulasi seiring waktu.
+Dari prototipe E2B saya belajar bahwa batas waktu (timeout) default yang tidak terdokumentasi, seperti 60 detik di AIP dan 180 detik di SDK E2B, adalah sumber bug yang paling sulit dilacak. Menulis konfigurasi timeout secara eksplisit, seperti \texttt{request\_timeout} dan \texttt{tool\_timeout\_seconds}, menyelamatkan banyak waktu debugging. Perbaikan memory leak menunjukkan bahwa resource cleanup pada pipeline berdurasi panjang tidak bisa dianggap sepele; kebocoran koneksi yang halus akan terakumulasi seiring waktu.
+
+Dari pipeline PR feedback di \texttt{gdplabs-exploration}, saya belajar menilai kelayakan sebuah ide sebelum investasi penuh: pipeline ini dimulai sebagai analyzer sederhana, lalu diuji terhadap PR sungguhan sebelum dibangun lengkap dengan email dan Drive. Proses tersebut memastikan yang dibangun benar-benar dipakai.
 
 \clearpage
-

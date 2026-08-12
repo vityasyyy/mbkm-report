@@ -3,33 +3,32 @@
 
 \subsection{Kesimpulan}
 
-Kegiatan magang di PT Sumber Cipta Multiniaga (GDP Labs) selama periode 9 Februari 2026 -- 22 Juni 2026 memberikan kontribusi signifikan terhadap pengembangan keterampilan teknis dan non-teknis. Dari sisi hardskill, pengalaman ini meliputi:
+Kegiatan magang di PT Sumber Cipta Multiniaga (GDP Labs) pada periode 9 Februari 2026 -- 22 Juni 2026 memberikan pengalaman yang lengkap, dari pengembangan fitur hingga pengujian dan deployment. Dari sisi hardskill:
 
 \begin{enumerate}
-    \item \textbf{Pengembangan fitur dan modul}: Merancang dan mengimplementasikan custom tools untuk Digital Employee (weekly report tools, pipeline eskalasi isu GitHub, E2B analytics agent) dengan prinsip modularitas dan clean code.
-    \item \textbf{Implementasi prototipe}: Membangun proof-of-concept untuk skenario AI seperti E2B analytics agent untuk generasi laporan MoM, perbaikan memory leak pada E2B issue processing runner.
-    \item \textbf{Pengembangan backend}: Mengembangkan layanan backend dengan Python dan FastAPI yang terintegrasi dengan GL-IAM SDK untuk autentikasi berbasis JWT, manajemen API key, dan agent delegation.
-    \item \textbf{Pengujian unit dan modul}: Menyusun dan menjalankan pengujian unit menggunakan pytest dengan pendekatan mocking dan analisis cakupan kode (coverage).
-    \item \textbf{Pengujian integrasi dan sistem}: Mengikuti serta berkontribusi pada pengujian integrasi melalui CI/CD (GitHub Actions) dan pengujian end-to-end dengan Playwright untuk memastikan keandalan sistem secara menyeluruh.
+    \item \textbf{Pengembangan fitur dan modul}: Membangun pipeline deteksi dan eskalasi isu berulang (DE-WRI) dari nol hingga menjadi agen terjadwal di produksi, mengembangkan tool dan sub-agen pada DE-WR (compliance pipeline, compliance summary email, issue processing agent), serta membangun E2B analytics agent untuk laporan MoM mingguan bergaya konsultan Big 4.
+    \item \textbf{Implementasi prototipe}: Membangun proof-of-concept E2B untuk issue scoring dan generasi laporan MoM, memperbaiki memory leak pada E2B issue processing runner, serta membangun pipeline biweekly PR feedback dengan integrasi GitHub GraphQL, Google Drive, dan email.
+    \item \textbf{Pengembangan backend}: Memperbaiki atomicitas \texttt{create\_user\_with\_password} di GL-IAM SDK pada level penyedia data, menyempurnakan contoh API key hierarchy dan menulis tutorial DPoP Keycloak di gl-iam-cookbook, merefaktor tool DE-PM dari sesi MCP BOSA ke GLConnectors SDK, dan menangani deployment Helm ke dev dan prod.
+    \item \textbf{Pengujian unit dan modul}: Menyusun unit test hingga cakupan 100\% pada modul kunci (56 unit test dan 5 integration test untuk \texttt{FetchEmployeeIssuesTool}), termasuk pengujian keamanan pencegahan SQL injection.
+    \item \textbf{Pengujian integrasi dan sistem}: Mengembangkan pengujian end-to-end Playwright untuk alur MoM dan DE-PM-Datasaur, mengonsolidasikan integration test DE-PM menjadi pola env-driven, serta menangani kegagalan pipeline CI/CD dan validasi deployment.
 \end{enumerate}
 
-Dari sisi softskill, kegiatan ini melatih kemampuan bekerjasama dalam tim Agile/Scrum, komunikasi teknis melalui code review, serta manajemen tugas menggunakan GitHub Projects.
+Dari sisi softskill, kegiatan ini melatih kemampuan bekerja sama dalam tim Agile/Scrum, komunikasi teknis melalui code review, dan manajemen tugas menggunakan GitHub Projects.
 
 \subsection{Saran}
 
-Berdasarkan pengalaman mengikuti program MBKM di GDP Labs, disampaikan saran berikut:
+Berdasarkan pengalaman mengikuti program MBKM di GDP Labs:
 
 \subsubsection{Saran untuk Perusahaan}
 \begin{enumerate}
-    \item \textbf{Dokumentasi runbook untuk CI/CD failures}: Tim infra disarankan untuk membuat runbook resmi yang mendeskripsikan daftar kegagalan pipeline umum dan langkah penanganannya, sehingga mengurangi waktu investigasi perulangan.
-    \item \textbf{Standardisasi konfigurasi timeout pada sandbox eksekusi}: Pengalaman menangani berbagai batas waktu default (60 detik pada AIP, 180 detik pada E2B SDK) yang tidak terdokumentasi menunjukkan perlunya standar timeout eksplisit terdokumentasi untuk setiap sandbox eksekusi berbasis AI, sehingga mengurangi waktu debugging akibat timeout implisit.
+    \item \textbf{Dokumentasi runbook untuk kegagalan CI/CD}: Kegagalan pipeline yang berulang, seperti ketidaksesuaian variabel konfigurasi antara dev dan prod, akan lebih cepat ditangani jika ada runbook resmi berisi daftar kegagalan umum dan langkah penanganannya.
+    \item \textbf{Standarisasi konfigurasi timeout pada sandbox eksekusi}: Batas waktu default yang tidak terdokumentasi (60 detik pada AIP, 180 detik pada SDK E2B) menyulitkan debugging. Standar timeout eksplisit untuk setiap sandbox eksekusi berbasis AI akan mengurangi waktu investigasi.
 \end{enumerate}
 
 \subsubsection{Saran untuk Akademik}
 \begin{enumerate}
-    \item \textbf{Integrasi praktik Agile ke kurikulum}: Disarankan agar mata kuliah Proyek Rekayasa Perangkat Lunak atau sejenisnya memasukkan elemen praktik Agile (sprint planning, stand-up, retrospektif) sebagai bagian dari penilaian proyek, sehingga mahasiswa lebih siap menghadapi lingkungan industri.
-    \item \textbf{Pola desain SDK untuk layanan enterprise}: Menambahkan topik pola integrasi SDK seperti SIMI (Single Interface Multiple Implementation), provider protocol, dan dependency injection pada mata kuliah Pengembangan Perangkat Lunak akan sangat relevan mengingat banyak perusahaan teknologi menggunakan pola-pola ini untuk mengelola berbagai penyedia layanan identitas dan autentikasi.
+    \item \textbf{Integrasi praktik Agile ke kurikulum}: Mata kuliah proyek (seperti Proyek Rekayasa Perangkat Lunak) akan lebih siap menghadapi industri jika memasukkan sprint planning, stand-up, dan retrospektif sebagai bagian dari penilaian.
+    \item \textbf{Pola desain SDK untuk layanan enterprise}: Topik pola integrasi SDK seperti SIMI (Single Interface Multiple Implementation), provider protocol, dan dependency injection relevan untuk mata kuliah pengembangan perangkat lunak, karena banyak perusahaan menggunakannya untuk mengelola banyak penyedia layanan.
 \end{enumerate}
 
 \clearpage
-

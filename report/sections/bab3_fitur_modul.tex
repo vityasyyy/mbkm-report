@@ -1,5 +1,5 @@
 %BAB III: HARDSKILL - PENGEMBANGAN FITUR DAN MODUL PROYEK
-\section{MBKM -- Hardskill: Pengembangan Fitur dan Modul Proyek}
+\section{MBKM Hardskill: Pengembangan Fitur dan Modul Proyek}
 
 \begin{table}[H]
     \centering
@@ -11,97 +11,35 @@
         \textbf{Mata Kuliah} & : Internship: Pengembangan Fitur dan Modul Proyek \\
         \textbf{Kode MK} & : MII21-3011 \\
         \textbf{Total SKS} & : 4 SKS \\
-        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs -- Digital Employee \\
+        \textbf{Judul Magang} & : MBKM Mandiri GDP Labs: Digital Employee \\
         \textbf{Durasi} & : 9 Februari 2026 -- 22 Juni 2026 \\
     \end{tabular}
 \end{table}
 
 \subsection{Landasan Teori}
 
-Pengembangan fitur dalam lingkup Digital Employee (DE) dilakukan berdasarkan prinsip clean code, modular design, dan arsitektur multi-agent yang terstandardisasi. DE merupakan platform agen otomasi berbasis AI yang menggunakan Model Context Protocol (MCP) untuk komunikasi antara agen dan layanan eksternal. Arsitektur ini memungkinkan pengembangan tool yang bersifat modular, sehingga setiap komponen dapat dikembangkan, diuji, dan diimplementasikan secara independen.
+Digital Employee (DE) adalah platform agen otomasi berbasis AI yang dikembangkan GDP Labs. Agen berkomunikasi dengan layanan eksternal melalui Model Context Protocol (MCP) dan setiap tool wajib memenuhi kontrak \texttt{args\_schema} (Pydantic BaseModel), \texttt{tool\_config\_schema}, \texttt{get\_tool\_config()}, serta metode \texttt{\_run()}. Kontrak ini membuat tool modular dan dapat diuji secara independen. Pola coordinator-subagent dipakai untuk mendelegasikan tugas dari agen utama ke sub-agen yang lebih spesifik berdasarkan intensi pengguna.
 
-Setiap tool dalam ekosistem DE wajib memenuhi kontrak berupa \texttt{args\_schema} (Pydantic BaseModel), \texttt{tool\_config\_schema}, \texttt{get\_tool\_config()}, dan metode \texttt{\_run()}. Pendekatan ini menjamin konsistensi antar modul dan memudahkan integrasi ke dalam orkestrasi agen yang lebih besar. Selain itu, pola coordinator-subagent memungkinkan agen utama mendelegasikan tugas ke sub-agen yang lebih spesifik berdasarkan intensi pengguna, sehingga membentuk hirarki eksekusi yang terstruktur.
+Kegiatan pengembangan saya pada mata kuliah ini berfokus pada tiga aplikasi dalam monorepo \texttt{digital-employee}: \texttt{digital-employee-weekly-report} (DE-WR), \texttt{digital-employee-weekly-report-issue-reoccuring} (DE-WRI), dan \texttt{digital-employee-pm} (DE-PM). Seluruh kode dikirim melalui pull request (PR) di GitHub dan di-review oleh rekan tim sebelum di-merge.
 
 \subsection{Kegiatan}
 
-Kegiatan pengembangan fitur dan modul proyek dilakukan pada tiga domain utama: Digital Employee Project Manager (DE-PM), Digital Employee Weekly Report (DE-WR), dan Digital Employee Weekly Report Issue Reoccuring (DE-WRI).
+\subsubsection{DE-WRI: Pipeline Eskalasi Isu Berulang dari Nol}
 
-\subsubsection{Digital Employee Project Manager (Pamela)}
-
-DE-PM adalah agen otomasi untuk manajemen proyek yang terdiri dari enam sub-agen dengan tanggung jawab spesifik. Kontribusi diberikan pada pengembangan:
+Kontribusi terbesar pada mata kuliah ini adalah membangun pipeline deteksi dan eskalasi isu berulang (recurring issue) untuk laporan mingguan, yang kemudian di-deploy ke runtime AIP (AI Intelligence Platform) sebagai agen terjadwal. Pipeline ini saya bangun dari nol dalam beberapa langkah iteratif.
 
 \begin{itemize}
-    \item \textbf{Meeting Join Agent}: Memprovisikan bot Meemo ke Google Meet untuk merekam rapat secara otomatis melalui \texttt{meemo\_join\_meeting\_tool}.
-    \item \textbf{GitHub Issue Reminder Tool}: Melakukan pemindaian isu terbuka di GitHub dan mengirim pengingat melalui tiga tingkat eskalasi -- assignee, manager, dan senior manager -- berdasarkan aturan interval waktu dan hierarki organisasi yang tersimpan di Google Sheets.
-    \item \textbf{Project Items Reminder Tool}: Memantau GitHub Projects v2 untuk tugas dengan due date, yang overdue, unassigned, atau tanggal yang hilang.
-    \item \textbf{MoM (Minutes of Meeting) Agent}: Mengambil data rapat dari Meemo, membuat Google Docs MoM secara otomatis, dan mengirim email riwayat rapat kepada peserta dengan filter domain.
+    \item \textbf{Inisialisasi Proyek}: Pipeline dimulai sebagai hello world berbasis \texttt{gllm\_pipeline.Pipeline}, lalu ditingkatkan menjadi \textit{deployable pipeline agent} yang dibungkus dalam \texttt{BaseTool} LangChain. TypedDict diganti dengan Pydantic BaseModel setelah muncul error runtime pada server AIP (\texttt{State type must be a TypedDict or Pydantic BaseModel}).
+    \item \textbf{FetchEmployeeIssuesTool}: Tool ini melakukan query SQL JOIN \texttt{dummy\_weekly\_reports} $\rightarrow$ \texttt{employees} $\rightarrow$ \texttt{organizations} dan mengelompokkan hasil per pegawai beserta isunya. Pada tahap ini saya juga melakukan migrasi dari \texttt{BosaConnector} ke GLConnectors SDK. Keamanan ditangani dengan validasi nama tabel dan pencegahan SQL injection. Tool ini dilengkapi 56 unit test dan 5 integration test dengan cakupan 100\%.
+    \item \textbf{RecurringIssueDetector}: Deteksi isu berulang menggunakan \textit{strategy pattern} dengan \texttt{ExactMatcher} yang mencocokkan string secara case-insensitive, sehingga matcher lain (misalnya \texttt{FuzzyMatcher}) dapat ditambahkan tanpa mengubah alur utama. Satu bug penting diperbaiki di sini: \texttt{issue\_id} semula tidak dimasukkan ke tuple pengelompokan mingguan, sehingga isu yang sama bisa terdeteksi salah sebagai isu baru.
+    \item \textbf{GitHub Issue Tools}: Tool GitHub yang semula monolitik direfaktor menjadi tiga tool terpisah, yaitu \texttt{SearchGitHubIssueTool}, \texttt{CommentGitHubIssueTool}, dan \texttt{CloseGitHubIssueTool}, dengan \texttt{LookupGitHubDataTool} untuk memetakan pegawai ke akun GitHub. Sebelum mengeskalasi isu yang sudah tercatat di basis data, status isu di GitHub dicek terlebih dahulu.
+    \item \textbf{SendEmailTool}: Tool pengiriman email yang terintegrasi dengan MCP \texttt{google\_mail} BOSA, lengkap dengan unit test dan integration test.
+    \item \textbf{EscalationOrchestratorTool}: Pipeline lima langkah (ambil isu, deteksi berulang, cek GitHub, kirim email, catat basis data) dikonsolidasikan menjadi satu tool orkestrasi. \texttt{get\_tool\_config} diseragamkan di seluruh tool.
+    \item \textbf{Manajemen Penjadwalan}: Saya menambahkan dukungan manajemen jadwal AIP melalui perintah CLI (buat, hapus, dan info jadwal). Manajemen jadwal dibuat idempoten untuk mencegah bug overwrite, dan \textit{trigger phrase} ditegakkan agar eksekusi terjadwal tidak dijalankan secara tidak sengaja. Jadwal mingguan dikonfigurasi setiap Minggu pukul 10.00.
+    \item \textbf{Peningkatan Arsitektur}: Diterapkan pola coordinator dengan dua sub-agen, yaitu Escalation Agent dan GitHub DB Sync Agent. \texttt{GLBaseTool} diganti fungsi utilitas, konfigurasi dipusatkan, fungsi basis data disatukan dengan sanitasi identifier, dan query SQL dieksternalisasi ke berkas \texttt{.sql} lalu di-embed ulang agar kompatibel dengan AIP.
 \end{itemize}
 
-Escalation pada \texttt{issue\_reminder\_tool} menggunakan logika stateful yang mengevaluasi usia isu terbuka dan memutuskan tingkat pengingat berikutnya berdasarkan \texttt{EscalationContext} dan \texttt{get\_escalation()}.
-
-\subsubsection{Project Manager Datasaur (Knowledge Aggregation DE)}
-
-DE-PM-Datasaur adalah variasi PM untuk tenant Datasaur dengan 15 sub-agen yang mengumpulkan pengetahuan dari Slack, Gmail, Notion, dan Datadog. Kontribusi diberikan pada:
-
-\begin{itemize}
-    \item \textbf{MCP Sub-Agent Pattern}: Mengimplementasikan pola di mana setiap MCP (Notion, Slack, Gmail, Datadog) dibungkus dalam sub-agen khusus untuk membatasi akses tool pada skill-router agen.
-    \item \textbf{Notion dan Slack Tool Integration}: Tool seperti \texttt{search\_notion\_page\_tool}, \texttt{get\_notion\_page\_content\_tool}, dan \texttt{send\_slack\_notification\_tool} untuk retrieval dan penyimpanan data operasional.
-    \item \textbf{Datadog MCP Integration}: Integrasi monitoring infrastruktur melalui \texttt{datadog\_mcp\_subagent} untuk \textit{panel intelligence} dan \textit{dev ops}.
-\end{itemize}
-
-\subsubsection{Digital Employee Weekly Report (Claudia)}
-
-DE-Weekly Report adalah agen otomasi yang mengelola laporan mingguan dari tim engineering, terdiri dari tujuh sub-agen:
-
-\begin{itemize}
-    \item \textbf{Weekly Report Ingestor}: Menggunakan \texttt{IngestionOrchestratorTool} untuk menarik laporan dari Google Drive dan menyimpannya ke PostgreSQL, mengelola base data organisasi/pegawai/proyek dari CATAPA.
-    \item \textbf{Issue Processing Agent}: Mengekstrak isu dan meneruskan ke sub-agen scoring dengan rubrik (Blokir Critical Path = 5, KPI Variance = 4, Urgency = 3, Escalation Request = 3, Recurrence = 2, maksimum 17).
-    \item \textbf{Report Updater Agent}: Memperbarui Google Docs \textit{Top 5 Issues} per organisasi menggunakan \texttt{TopIssuesByOrgTool} yang merender tabel markdown per organisasi.
-    \item \textbf{Empty Weekly Report Agent}: Mendeteksi laporan kosong melalui pencarian placeholder \texttt{(please insert here)} pada dokumen Google Docs, mengunggah snapshot PDF, dan melacak laporan kosong di spreadsheet master.
-    \item \textbf{Weekly Report QnA Agent}: Memberikan jawaban bahasa alami atas riwayat isu melalui \texttt{sql\_tool\_mcp} (read-only SQL database).
-\end{itemize}
-
-\subsubsection{E2B Sandbox Issue Processing}
-
-Sebagai alternatif scoring berbasis LLM langsung, diimplementasikan jalur E2B untuk memproses isu di dalam sandbox Python terisolasi:
-
-\begin{lstlisting}[caption={Alur E2B Issue Processing dalam Weekly Report}]
-# Jalur paralel dengan ThreadPoolExecutor
-# Setiap batch mendapat sandbox E2B terpisah
-# Mengunggah runner_source.py (~825 baris) ke sandbox
-# Menginstal dependensi: openai, httpx, python-dotenv, requests
-# Menjalankan scoring dengan LLM via OpenRouter
-# Menangani PII anonymization via NER API
-# Timeout per tool call: 7200 detik
-\end{lstlisting}
-
-\subsubsection{E2B Analytics Agent untuk Laporan MoM Mingguan}
-
-Diimplementasikan agen analitik berbasis E2B untuk pembuatan laporan Minutes of Meeting (MoM) mingguan secara otomatis. Sumber data utama yang digunakan adalah Meemo, dengan kredensial BOSA yang diperoleh dari \texttt{MEEMO\_MCP\_X\_API\_KEY} dan \texttt{MEEMO\_MCP\_URL}. Eksekusi kode Python di dalam sandbox E2B dilakukan melalui \texttt{Sandbox.run\_code()}, menggantikan pendekatan \texttt{commands.run()} sebelumnya.
-
-\begin{itemize}
-    \item \textbf{Generasi Laporan PDF}: Dihasilkan laporan bergaya konsultan Big 4 menggunakan ReportLab Platypus. Grafik Matplotlib disertakan untuk tren bulanan dan perbandingan MoM. Pembuatan email dilakukan secara prompt-driven. Penamaan PDF menggunakan versi dengan surfacing link Drive. Pengiriman email dan pembagian PDF dilakukan kepada penerima terkait.
-    \item \textbf{Timeout dan Resiliensi}: Parameter \texttt{request\_timeout} diteruskan ke pemanggilan E2B SDK untuk mencegah \textit{default timeout} 60 detik. Override resiliensi \texttt{tool\_timeout\_seconds} disediakan melalui \texttt{tool\_configs}. Timeout minimum dinaikkan dari 180 detik menjadi 300 detik untuk \textit{code interpreter} E2B. Untuk analytics sub-agent, \texttt{timeout\_seconds=1800} diterapkan.
-    \item \textbf{Penjadwalan Mingguan}: Jadwal analitik dikonfigurasi setiap Jumat pukul 17:00 (opsional).
-    \item \textbf{Perbaikan Iteratif}: Dilakukan perbaikan bertahap meliputi error 422 pada pengiriman email, inkonsistensi \textit{action items}, kendala layout, penanganan penerima, pengambilan detail wajib, perbaikan link Drive, dan penyelarasan dengan PRD.
-\end{itemize}
-
-\subsubsection{Digital Employee Weekly Report Issue Reoccuring}
-
-Diimplementasikan sistem pelacakan isu berulang yang terintegrasi dengan GitHub. Pipeline ini dibangun dari awal melalui beberapa tahap pengembangan iteratif.
-
-\begin{itemize}
-    \item \textbf{Inisialisasi Proyek}: Dimulai dengan pipeline berbasis hello world tanpa agen, kemudian ditingkatkan menjadi \textit{deployable pipeline agent} dengan \texttt{gllm\_pipeline.Pipeline} yang dibungkus dalam \texttt{BaseTool} LangChain. Pendekatan TypedDict digantikan dengan Pydantic BaseModel setelah terjadi \textit{runtime validation error} pada AIP (\texttt{State type must be a TypedDict or Pydantic BaseModel}).
-    \item \textbf{FetchEmployeeIssuesTool (Langkah 2)}: Melakukan kueri SQL JOIN \texttt{dummy\_weekly\_reports → employees → organizations} dan mengelompokkan hasil per pegawai beserta isunya. Dilakukan migrasi dari BosaConnector ke GLConnectors SDK. Fitur keamanan yang diimplementasikan meliputi validasi nama tabel dan pencegahan SQL injection. Pengujian mencakup 56 unit test dan 5 integration test dengan cakupan 100\%.
-    \item \textbf{RecurringIssueDetector dengan Strategy Pattern (Langkah 3)}: \texttt{ExactMatcher} melakukan pencocokan string eksak secara \textit{case-insensitive}. Pola strategy memungkinkan ekstensibilitas untuk matcher lain di masa depan (misalnya \texttt{FuzzyMatcher}). Dilakukan perbaikan \textit{bug} kritis: \texttt{issue\_id} dimasukkan ke dalam \textit{tuple} pengelompokan mingguan untuk deteksi isu berulang yang benar.
-    \item \textbf{GitHub Issue Tools (Langkah 4--5)}: Tool monolitik direfaktor menjadi tool terpisah: \texttt{SearchGitHubIssueTool}, \texttt{CommentGitHubIssueTool}, dan \texttt{CloseGitHubIssueTool}. \texttt{LookupGitHubDataTool} menyediakan mapping pegawai ke GitHub. Pemeriksaan status isu GitHub dilakukan sebelum mengeskalkasi catatan yang sudah ada di basis data.
-    \item \textbf{SendEmailTool (Langkah 6)}: Diintegrasikan dengan BOSA \texttt{google\_mail} MCP. Dilengkapi dengan unit test dan integration test.
-    \item \textbf{EscalationOrchestratorTool}: Mengonsolidasikan pipeline 5 langkah ke dalam satu tool orkestrasi. Standarisasi \texttt{get\_tool\_config} dilakukan pada seluruh tool.
-    \item \textbf{Manajemen Penjadwalan}: Diterapkan dukungan manajemen jadwal AIP. Perintah CLI disediakan untuk pembuatan, penghapusan, dan informasi jadwal. Manajemen jadwal bersifat idempoten untuk mencegah \textit{overwrite bug}. Jadwal mingguan dikonfigurasi setiap Minggu pukul 10:00. Penegakan \textit{trigger phrase} diterapkan untuk eksekusi terjadwal.
-    \item \textbf{Peningkatan Arsitektur}: Diterapkan pola coordinator dengan sub-agen (Escalation Agent + GitHub DB Sync Agent). \texttt{GLBaseTool} direfaktor menjadi fungsi utilitas. Konfigurasi dipusatkan. Fungsi utilitas basis data dipusatkan dengan sanitasi identifier. Kueri SQL dieksternalisasi ke berkas \texttt{.sql} kemudian dire-embed untuk kompatibilitas AIP.
-\end{itemize}
-
-Berikut merupakan keluaran dari pipeline \texttt{EscalationOrchestratorTool} yang menggambarkan skenario keputusan untuk setiap isu berulang:
+Hasil akhirnya adalah agen DE-WRI yang berjalan terjadwal setiap minggu. Keputusan untuk setiap isu berulang mengikuti alur berikut:
 
 \begin{lstlisting}[caption={Decision tree untuk isu berulang}]
 # Untuk setiap isu berulang:
@@ -113,9 +51,60 @@ Berikut merupakan keluaran dari pipeline \texttt{EscalationOrchestratorTool} yan
 # - Ditemukan + status=closed -> Tutup DB record, buat isu baru
 \end{lstlisting}
 
+Pipeline ini dirangkum dalam PR \#573 (\textit{feat(wr-issue-reoccurrence): implement Weekly Report Escalation Agent with GitHub sync and CLI}).
+
+\subsubsection{DE-WR: Tool dan Pipeline Laporan Mingguan}
+
+Pada aplikasi \texttt{digital-employee-weekly-report}, kontribusi saya mencakup tool, sub-agen, dan pipeline komplain laporan kosong:
+
+\begin{itemize}
+    \item \textbf{ReportUpdaterDateTool}: Menambahkan tool \texttt{ReportUpdaterDateTool} dan merefaktor agen \texttt{report\_updater} agar perhitungan tanggal dikerjakan di sisi server, bukan di dalam instruksi agen (PR \#593).
+    \item \textbf{Report Email Sender Agent}: Menambahkan sub-agen \texttt{report\_email\_sender\_agent} untuk mengirim email terkait laporan mingguan (PR \#600).
+    \item \textbf{Issue Processing Agent}: Menyatukan ekstraksi dan scoring isu ke dalam satu agen \texttt{issue\_processing} agar alur lebih sederhana dan konsisten (PR \#730).
+    \item \textbf{Empty Weekly Report Compliance Pipeline}: Membangun pipeline yang mendeteksi laporan mingguan kosong dengan menghitung placeholder \texttt{(please insert here)} pada dokumen Google Docs, mengunggah snapshot PDF ke Google Drive, dan melacak laporan kosong di spreadsheet master (PR \#663). Pipeline ini memiliki \textit{batch run tracker} agar proses bisa dilanjutkan setelah terputus, menamai PDF dengan zona waktu Asia/Jakarta, dan melewati pegawai yang tidak aktif atau tanpa manager (PR \#776). Tool \texttt{google\_drive\_search} yang mendukungnya saya lengkapi dengan test suite hingga cakupan 100\%.
+    \item \textbf{Weekly Compliance Summary Email}: Menambahkan \texttt{SendComplianceSummaryEmailTool} untuk mengirim ringkasan komplain mingguan secara otomatis, lengkap dengan auto-resolution dan filter penerima (PR \#714).
+\end{itemize}
+
+\subsubsection{DE-WR: E2B Issue Processing}
+
+Sebagai alternatif scoring berbasis LLM langsung, saya mengerjakan jalur E2B yang memproses isu di dalam sandbox Python terisolasi:
+
+\begin{lstlisting}[caption={Alur E2B Issue Processing dalam Weekly Report}]
+# Jalur paralel dengan ThreadPoolExecutor
+# Setiap batch mendapat sandbox E2B terpisah
+# Mengunggah runner_source.py (~800 baris) ke sandbox
+# Menginstal dependensi: openai, httpx, python-dotenv, requests
+# Menjalankan scoring dengan LLM via OpenRouter
+# Menangani PII anonymization via NER API
+# Timeout per tool call: 7200 detik
+\end{lstlisting}
+
+\subsubsection{DE-PM: E2B Analytics Agent untuk Laporan MoM Mingguan}
+
+Pada aplikasi \texttt{digital-employee-pm}, saya membangun \texttt{E2B Analytics Agent} untuk membuat laporan Minutes of Meeting (MoM) mingguan secara otomatis. Data utama diambil dari Meemo, dengan kredensial yang diturunkan dari \texttt{MEEMO\_MCP\_X\_API\_KEY} dan \texttt{MEEMO\_MCP\_URL} (PR \#2167, dilanjutkan pada PR \#830).
+
+\begin{itemize}
+    \item \textbf{Generasi Laporan PDF}: Laporan dibuat bergaya konsultan Big 4 menggunakan ReportLab Platypus, dengan grafik Matplotlib untuk tren bulanan dan perbandingan MoM. Email dikirim secara prompt-driven, PDF diberi nama ber-versi dengan tautan Drive, dan dibagikan ke penerima terkait.
+    \item \textbf{Timeout dan Resiliensi}: Default timeout AIP 60 detik dilampaui dengan meneruskan \texttt{request\_timeout} ke pemanggilan SDK E2B dan menyediakan override resiliensi \texttt{tool\_timeout\_seconds} melalui \texttt{tool\_configs}. Timeout minimum \textit{code interpreter} E2B dinaikkan dari 180 detik menjadi 300 detik, dan sub-agen analytics diberi \texttt{timeout\_seconds=1800}. Eksekusi memakai \texttt{Sandbox.run\_code()} menggantikan \texttt{commands.run()} yang sudah tidak digunakan.
+    \item \textbf{Penjadwalan Mingguan}: Jadwal analitik dikonfigurasi setiap Jumat pukul 17.00 (opsional).
+    \item \textbf{Perbaikan Iteratif}: Selama pengembangan saya menangani error 422 pada pengiriman email, inkonsistensi action items, kendala layout PDF, penanganan penerima, pengambilan detail wajib, dan perbaikan tautan Drive agar hasil sesuai PRD.
+\end{itemize}
+
+\subsubsection{DE-PM: Migrasi BOSA ke GLConnectors}
+
+Mulai awal Juni, saya merefaktor tool-tool DE-PM yang masih memakai sesi MCP BOSA ke pola bersama GLConnectors SDK:
+
+\begin{itemize}
+    \item \texttt{send\_filtered\_email\_tool} (PR \#866), \texttt{create\_filtered\_drive\_permission\_tool} (PR \#878), dan \texttt{GoogleDocsToHtmlTool} (PR \#892) diubah agar memanggil SDK GLConnectors secara langsung.
+    \item Pembungkus \texttt{gl\_connectors\_execute} dihapus, konfigurasi disuntikkan lewat \texttt{get\_tool\_config}, nama variabel \texttt{bosa} diganti \texttt{gl\_connectors}, dan konfigurasi yang sudah tidak dipakai (suffix \texttt{GL\_CONNECTORS\_API\_KEY}/\texttt{TOKEN}) dibersihkan. Refaktor ini diuji hingga cakupan branch 100\%.
+    \item Setelah migrasi, data E2B Analytics juga dipindahkan dari Meemo MCP ke GL Connectors.
+    \item \textbf{Structured Logging}: Sebagai perbaikan terkait, saya menambahkan modul logging berbasis ContextVar, menghubungkannya ke titik masuk tool runtime, dan memigrasikan tool yang tersisa ke \texttt{ToolConfigMixin} agar \texttt{get\_tool\_config} dan context setup selalu berjalan di dalam try block.
+\end{itemize}
+
 \subsection{Refleksi}
 
-Pengembangan fitur untuk Digital Employee mengajarkan betapa pentingnya pemisahan tanggung jawab (single responsibility) pada agen dan tool. Pengalaman membangun 15 sub-agen DE-PM-Datasaur dan tujuh sub-agen DE-Weekly Report menunjukkan bahwa orkestrasi agen menjadi kompleks ketika setiap sub-agen memiliki instruksi, tool, dan MCP yang berbeda. Pendekatan \textit{coordinator-subagent} dengan MCP Sub-Agent Pattern memungkinkan kontrol akses yang granular, sedangkan mekanisme eskalasi pada issue reminder menunjukkan pentingnya stateful processing dalam sistem otomasi. Penerapan E2B sandbox pada issue scoring juga mengajarkan bahwa keamanan eksekusi kode tidak boleh ditawar demi kelincahan LLM.
+Dari membangun pipeline DE-WRI dari nol, saya belajar bahwa sebagian besar bug tidak muncul di unit test, melainkan di interaksi antar komponen. Dua contoh yang paling saya ingat: error runtime AIP yang memaksa TypedDict diganti Pydantic BaseModel, dan \texttt{issue\_id} yang tertinggal dari tuple pengelompokan mingguan sehingga isu berulang tidak terdeteksi. Keduanya hanya muncul saat pipeline benar-benar dijalankan di server, bukan saat diuji lokal.
+
+Pekerjaan migrasi BOSA ke GLConnectors mengajarkan bahwa pola bersama (shared pattern) bernilai ketika jumlah tool banyak; tanpa konsistensi \texttt{get\_tool\_config} dan penamaan variabel, setiap tool akan punya cara sendiri dalam mengelola koneksi dan konfigurasi. Menulis test hingga cakupan 100\% pada tool yang memanggil API eksternal membutuhkan desain mock yang jujur, supaya yang diuji adalah logika tool, bukan perilaku mock itu sendiri.
 
 \clearpage
-
