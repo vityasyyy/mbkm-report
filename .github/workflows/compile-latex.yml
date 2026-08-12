@@ -1,0 +1,95 @@
+name: Compile LaTeX
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'report/**'
+      - 'presentation/**'
+      - 'docker/Dockerfile'
+      - 'Makefile'
+      - '.github/workflows/compile-latex.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'report/**'
+      - 'presentation/**'
+      - 'docker/Dockerfile'
+      - 'Makefile'
+      - '.github/workflows/compile-latex.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compile-report:
+    runs-on: ubuntu-latest
+    name: Compile Report
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile report with Docker
+        run: make report-docker
+
+      - name: Upload report PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-pdf
+          path: report/main.pdf
+          retention-days: 90
+
+  compile-presentation:
+    runs-on: ubuntu-latest
+    name: Compile Presentation
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile presentation with Docker
+        run: make presentation-docker
+
+      - name: Upload presentation PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: presentation-pdf
+          path: presentation/build/main.pdf
+          retention-days: 90
+
+  release:
+    needs: [compile-report, compile-presentation]
+    runs-on: ubuntu-latest
+    name: Create Release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Download report PDF
+        uses: actions/download-artifact@v4
+        with:
+          name: report-pdf
+          path: report-artifact
+
+      - name: Download presentation PDF
+        uses: actions/download-artifact@v4
+        with:
+          name: presentation-pdf
+          path: presentation-artifact
+
+      - name: Rename PDFs for release
+        run: |
+          cp report-artifact/main.pdf report.pdf
+          cp presentation-artifact/main.pdf presentation.pdf
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: report-v${{ github.run_number }}
+          name: Laporan MBKM #${{ github.run_number }}
+          body: |
+            Laporan Magang MBKM di GDP Labs dan presentasinya, dikompilasi otomatis dari commit `${{ github.sha }}`.
+
+            - **report.pdf**: Laporan magang (33 halaman)
+            - **presentation.pdf**: Slide presentasi laporan
+          files: |
+            report.pdf
+            presentation.pdf
