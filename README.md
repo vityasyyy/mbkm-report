@@ -125,5 +125,5 @@ Konten laporan didasarkan pada riwayat commit dan PR yang ada di repositori kerj
 ---
 
 Mahasiswa: **Muhammad Argya Vityasy** (23/522547/PA/22475)
-Pembimbing: **Guntur Budi Herwanto, S.Kom., M.Cs.**
+Pembimbing: **Dr. techn. Guntur Budi Herwanto, S.Kom., M.Cs.**
 Program Studi Ilmu Komputer, FMIPA UGM
