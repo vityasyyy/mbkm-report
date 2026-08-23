@@ -194,20 +194,20 @@ Dosen Pembimbing: Dr.\ techn.\ Guntur Budi Herwanto, S.Kom., M.Cs.}
 
 \begin{comparisonframe}{Masalah dan Kontribusi: Weekly Report}
     \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{Masalah}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item Laporan mingguan dan isu tersebar di dokumen serta database.
-                \item Isu yang berulang antar minggu sulit dilacak.
-                \item Status eskalasi ke GitHub tidak terlihat dari satu tempat.
+                \item Laporan mingguan dan isu berasal dari beberapa sumber.
+                \item Isu berulang antar minggu sulit dideteksi konsisten.
+                \item Status eskalasi GitHub harus sinkron dengan database.
             \end{itemize}
         \end{column}
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{Kontribusi}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item DE-WR mengingest, menormalisasi, dan menyimpan weekly report.
-                \item DE-WRI mendeteksi isu berulang lintas minggu.
-                \item Isu dieskalasi ke GitHub dan disinkronkan kembali ke database.
+                \item FetchEmployeeIssuesTool: SQL JOIN, sanitasi identifier, 56+5 test.
+                \item ExactMatcher mendeteksi recurrence lintas minggu.
+                \item Tool GitHub dipisah untuk search, comment, close, dan sync.
             \end{itemize}
         \end{column}
     \end{columns}
@@ -221,6 +221,11 @@ Dosen Pembimbing: Dr.\ techn.\ Guntur Budi Herwanto, S.Kom., M.Cs.}
 \begin{contentframe}{DE-WR dan DE-WRI: Satu Sumber Data}
     \diagramslide[0.56\textheight]{11_dewr_dewri_data_dependency.pdf}
     \smallnote{DE-WR menulis weekly reports dan issues; DE-WRI membaca data tersebut untuk mendeteksi recurrence dan melakukan eskalasi.}
+\end{contentframe}
+
+\begin{contentframe}{DE-WR: Tool dan Pipeline Laporan Mingguan}
+    \diagramslide[0.56\textheight]{03_dewr.pdf}
+    \smallnote{Kontribusi DE-WR mencakup ingestion, report updater, compliance laporan kosong, email summary, dan issue processing berbasis E2B.}
 \end{contentframe}
 
 \section{Implementasi Prototip Produk}
@@ -261,6 +266,27 @@ Dosen Pembimbing: Dr.\ techn.\ Guntur Budi Herwanto, S.Kom., M.Cs.}
     \diagramslide[0.56\textheight]{04_e2b_analytics.pdf}
     \smallnote{Data masuk ke agent, kode analitik dijalankan di sandbox terisolasi, lalu hasil dikirim sebagai laporan PDF.}
 \end{contentframe}
+
+\begin{comparisonframe}{Hasil Prototipe dan Perbaikan Runner}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.46\textwidth}
+            \textbf{Validasi prototipe}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item E2B issue scoring dibandingkan dengan penilaian manual.
+                \item E2B Analytics menghasilkan MoM PDF dengan grafik Matplotlib.
+                \item PR feedback membaca GitHub GraphQL lalu mengirim ringkasan ke Drive/email.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \textbf{Memory leak fix}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Menutup response, session httpx, dan client OpenAI.
+                \item Memory benchmark dipertahankan sebagai regresi.
+                \item Timeout E2B ditulis eksplisit untuk job berdurasi panjang.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{comparisonframe}
 
 {
 \usebackgroundtemplate{\backgroundcontent}
@@ -347,15 +373,15 @@ doc.build(story)
 
 \begin{comparisonframe}{Strategi Pengujian Unit dan Modul}
     \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{DE-WRI}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item FetchEmployeeIssuesTool: model, database, dan utility.
-                \item Unit test dan integration test dengan database nyata.
+                \item FetchEmployeeIssuesTool: 56 unit + 5 integration test.
+                \item Cakupan 100\% pada modul fetch\_employee\_issues.
                 \item Validasi identifier tabel untuk mencegah SQL injection.
             \end{itemize}
         \end{column}
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{DE-WR}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
                 \item Google Drive search dengan pagination.
@@ -383,15 +409,15 @@ doc.build(story)
 
 \begin{comparisonframe}{Integrasi: Dari Data hingga Deployment}
     \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{Skenario end-to-end}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item Seed data dan jalankan alur MoM.
-                \item Cari dokumen di Drive dan konversi ke HTML.
-                \item Kirim email ke peserta dan validasi hasil.
+                \item globalSetup/Teardown dan seed data menyiapkan skenario.
+                \item MoM: Meemo, Drive, konversi HTML, lalu email peserta.
+                \item Datasaur: page object Slack dan helper MCP.
             \end{itemize}
         \end{column}
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{Validasi sistem}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
                 \item Playwright untuk MoM dan PM Datasaur.
@@ -417,20 +443,20 @@ doc.build(story)
 
 \begin{comparisonframe}{Kolaborasi: Praktik dan Pembelajaran}
     \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{Praktik kerja}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item Perubahan melalui pull request dan code review.
-                \item Issue/progress dikelola dengan GitHub Projects.
-                \item Feedback mentor diterjemahkan menjadi perubahan kode dan test.
+                \item Sprint Agile/Scrum berlangsung dua hingga empat minggu.
+                \item Daily stand-up, planning, review, dan retrospective menjaga progres.
+                \item Perubahan melalui pull request dan minimal satu reviewer.
             \end{itemize}
         \end{column}
-        \begin{column}{0.47\textwidth}
+        \begin{column}{0.46\textwidth}
             \textbf{Pembelajaran}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item Dokumentasikan konfigurasi dan timeout secara eksplisit.
-                \item Debugging dimulai dari akar masalah dan bukti log/test.
-                \item AI membantu analisis awal; keputusan akhir tetap melalui reviewer manusia.
+                \item Status tugas dikelola dengan GitHub Projects.
+                \item Feedback review menjadi perubahan kode, query, dan test.
+                \item AI membantu analisis awal; keputusan akhir melalui reviewer manusia.
             \end{itemize}
         \end{column}
     \end{columns}
@@ -442,25 +468,23 @@ doc.build(story)
         \begin{column}{0.46\textwidth}
             \textbf{Kontribusi teknis}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item Membangun alur Weekly Report dan Issue Reoccurrence di AIP.
-                \item Mengembangkan prototipe analytics berbasis E2B.
-                \item Memperkuat GL-IAM dengan SIMI, atomicity, dan agent auth.
+                \item DE-WRI dari pipeline awal hingga agen terjadwal di AIP.
+                \item DE-WR, E2B issue scoring, MoM analytics, dan PR feedback.
+                \item GL-IAM: SIMI, atomicity, API-key hierarchy, dan DPoP.
+                \item Testing, Helm deployment, dan validasi CI/CD.
             \end{itemize}
         \end{column}
         \begin{column}{0.46\textwidth}
-            \textbf{Kompetensi yang terbentuk}\par
+            \textbf{Saran}\par
             \begin{itemize}\setlength{\itemsep}{3pt}
-                \item Backend, integrasi layanan, dan deployment.
-                \item Testing berlapis dari unit hingga E2E.
-                \item Kolaborasi, dokumentasi, dan debugging sistematis.
+                \item Runbook untuk kegagalan CI/CD.
+                \item Standar timeout eksplisit untuk sandbox AI.
+                \item Praktik Agile dan pola SDK di kurikulum.
             \end{itemize}
         \end{column}
     \end{columns}
-    \vspace{0.18cm}
-    \slidelead{Sekitar 350 author commits tercatat pada tiga keluarga produk yang didokumentasikan di GL.}
 \end{contentframe}
 
-\quoteslide{Terima Kasih\\[0.2cm]
-    \scriptsize Mengakar Kuat, Menjulang Tinggi}
+\quoteslide{Terima Kasih}
 
 \end{document}
