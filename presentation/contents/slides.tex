@@ -6,7 +6,7 @@
 \usetikzlibrary{positioning,fit,calc,arrows.meta}
 \usepackage{listings}
 \lstset{
-    basicstyle=\ttfamily\small,
+    basicstyle=\ttfamily\footnotesize,
     keywordstyle=\color{blue}\bfseries,
     commentstyle=\color{green!50!black},
     frame=single,
@@ -22,10 +22,8 @@
 }
 \pdfstringdefDisableCommands{\def\translate#1{#1}}
 
-% -------------------------------------------------------
-% Presentation metadata
-% -------------------------------------------------------
-\title{Laporan MBKM\texorpdfstring{\\}{}: Software Engineering Intern}
+\title{Laporan MBKM\texorpdfstring{\\}{}
+Software Engineering Intern}
 \subtitle{PT Sumber Cipta Multiniaga (GDP Labs)\texorpdfstring{\\[2pt]}{, }
 Digital Employee dan GL-IAM\texorpdfstring{\\[2pt]}{, }
 (9 Februari 2026 s.d. 22 Juni 2026)}
@@ -36,666 +34,433 @@ Dosen Pembimbing: Dr.\ techn.\ Guntur Budi Herwanto, S.Kom., M.Cs.}
 
 \graphicspath{{diagrams/}{themes/}}
 \newcommand{\slidelead}[1]{%
-    \begin{beamercolorbox}[wd=\textwidth, sep=0.20cm, center, rounded=true]{structure}
-        \small\bfseries #1
+    \begin{beamercolorbox}[wd=\textwidth, sep=0.14cm, center, rounded=true]{structure}
+        \footnotesize\bfseries #1
     \end{beamercolorbox}
 }
 \newcommand{\smallnote}[1]{%
-    \begin{beamercolorbox}[wd=\textwidth, sep=0.16cm, center, rounded=true]{frametitle}
-        \scriptsize #1
+    \begin{beamercolorbox}[wd=\textwidth, sep=0.12cm, center, rounded=true]{frametitle}
+        \footnotesize #1
     \end{beamercolorbox}
 }
-% Full-slide diagram helper
-\newcommand{\diagramslide}[2][0.70\textheight]{%
+\newcommand{\courseframe}[3]{%
+    {\usebackgroundtemplate{\backgroundcontent}%
+    \begin{frame}[plain]
+        \vfill
+        \begin{center}
+            {\usebeamerfont{section title}\color{ugmblue}
+                \begin{minipage}{0.86\textwidth}\centering #1\end{minipage}\par}
+            \vspace{0.35cm}
+            \large\textbf{Kode}: #2\hspace{1.0cm}\textbf{SKS}: #3
+        \end{center}
+        \vfill
+    \end{frame}}
+}
+\newcommand{\diagramslide}[2][0.62\textheight]{%
     \begin{center}%
-        \includegraphics[width=0.96\textwidth,height=#1,keepaspectratio]{#2}%
+        \includegraphics[width=0.94\textwidth,height=#1,keepaspectratio]{#2}%
     \end{center}%
 }
+\newenvironment{contentframe}[1]
+    {\usebackgroundtemplate{\backgroundcontent}\begin{frame}{#1}}
+    {\end{frame}}
+\newenvironment{comparisonframe}[1]
+    {\usebackgroundtemplate{\backgroundcontent}\begin{frame}{#1}\small}
+    {\end{frame}}
 \setbeamertemplate{frametitle}{%
-    \vspace*{0.52cm}\hspace*{-0.25cm}%
-    \begin{beamercolorbox}[wd=0.82\textwidth, dp=0.12cm]{frametitle}
+    \vspace*{0.42cm}\hspace*{-0.25cm}%
+    \begin{beamercolorbox}[wd=0.88\textwidth, dp=0.10cm]{frametitle}
         \usebeamerfont{frametitle}\insertframetitle\strut
     \end{beamercolorbox}%
-    \vspace*{0.10cm}%
-}
-
-% Auto section divider page (uses the theme's section page template)
-\AtBeginSection{%
-    \begin{frame}[plain]\sectionpage\end{frame}%
+    \vspace*{0.08cm}%
 }
 
 \begin{document}
 
-% ============================================================
-% FRONT MATTER
-% ============================================================
-
-% 1. Title
 \begin{frame}
     \titlepage
 \end{frame}
 
-% 2. Gambaran Umum Program
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Gambaran Umum Program}
+\begin{contentframe}{Gambaran Umum Program}
     \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.50\textwidth}
-            \footnotesize
-            \begin{tabular}{@{}ll@{}}
-                \textbf{Nama}     & : Muhammad Argya Vityasy \\
-                \textbf{NIM}      & : 23/522547/PA/22475 \\
-                \textbf{Prodi}    & : S1 Ilmu Komputer, FMIPA UGM \\
-                \textbf{Semester} & : 6, TA 2025/2026 \\
+        \begin{column}{0.46\textwidth}
+            \small
+            \begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.55cm}>{\raggedright\arraybackslash}p{3.25cm}@{}}
+                \textbf{Nama} & Muhammad Argya Vityasy \\
+                \textbf{NIM} & 23/522547/PA/22475 \\
+                \textbf{Prodi} & S1 Ilmu Komputer, FMIPA UGM \\
+                \textbf{Semester} & 6, TA 2025/2026 \\
             \end{tabular}
-            \vspace{0.15cm}
+            \vspace{0.18cm}
 
-            \textbf{Dosen Pembimbing}\\[0.1cm]
+            \textbf{Dosen Pembimbing}\par
             Dr.\ techn.\ Guntur Budi Herwanto, S.Kom., M.Cs.
         \end{column}
-        \begin{column}{0.50\textwidth}
-            \footnotesize
-            \textbf{Judul Magang}\\[0.1cm]
+        \begin{column}{0.46\textwidth}
+            \small
+            \textbf{Judul Magang}\par
             MBKM Mandiri (Software Engineering Intern)
-            \vspace{0.15cm}
+            \vspace{0.13cm}
 
-            \textbf{Durasi Magang}\\[0.1cm]
+            \textbf{Durasi Magang}\par
             9 Februari 2026 -- 22 Juni 2026
-            \vspace{0.15cm}
+            \vspace{0.13cm}
 
-            \textbf{Nama Perusahaan}\\[0.1cm]
+            \textbf{Perusahaan}\par
             PT Sumber Cipta Multiniaga (GDP Labs)
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{contentframe}
 
-% 3. Profil Perusahaan
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Profil Perusahaan}
+\begin{contentframe}{Profil Perusahaan}
     \small
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{PT Sumber Cipta Multiniaga (GDP Labs)}\\[0.1cm]
-            Perusahaan pengembangan produk perangkat lunak yang didirikan pada tahun 2012 dan berkantor pusat di Jakarta, Indonesia. Bagian dari ekosistem GDP Venture, fokus pada pengembangan solusi teknologi dan produk digital untuk berbagai kebutuhan bisnis.
+    \textbf{PT Sumber Cipta Multiniaga (GDP Labs)} adalah perusahaan pengembangan produk perangkat lunak yang didirikan pada tahun 2012 dan berkantor pusat di Jakarta. GDP Labs merupakan bagian dari ekosistem GDP Venture dan membangun solusi teknologi untuk berbagai kebutuhan bisnis.
+
+    \vspace{0.22cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.46\textwidth}
+            \textbf{Lingkup teknologi}\par
+            AI, blockchain, cloud computing, data, mobile, web, database, dan information security.
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{Teknologi yang dimanfaatkan}\\[0.05cm]
-            AI, Blockchain, Cloud Computing, Data, Mobile, Web, Database, dan Information Security dalam membangun produk dan solusi digital.
-            \vspace{0.10cm}
-            \textbf{Posisi saya}\\[0.05cm]
-            Software Engineering Intern di tim Software Engineering, 9 Februari -- 22 Juni 2026.
+        \begin{column}{0.46\textwidth}
+            \textbf{Peran saya}\par
+            Software Engineering Intern pada tim Software Engineering, dengan kontribusi pada Digital Employee, GL Connectors, dan GL-IAM.
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{contentframe}
 
-% 4. Program Magang: Daftar Mata Kuliah MBKM
-\section{Program Magang: Daftar Mata Kuliah MBKM}
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Daftar Mata Kuliah MBKM}
-    \begin{columns}[T]
-        \begin{column}{1.0\textwidth}
-            \centering
-            \small
-            \begin{tabular}{@{}cllc@{}}
-                \toprule
-                \textbf{Kode} & \textbf{Mata Kuliah} & \textbf{SKS} & \textbf{Bab} \\
-                \midrule
-                MII21-3011 & Internship: Pengembangan Fitur dan Modul Proyek & 4 & III \\
-                MII21-3013 & Internship: Implementasi Prototipe Produk & 4 & IV \\
-                MII21-3014 & Internship: Pengembangan Backend & 4 & V \\
-                MII21-3015 & Internship: Pengujian Unit dan Modul Proyek & 3 & VI \\
-                MII21-3016 & Internship: Pengujian Integrasi dan Sistem & 3 & VII \\
-                MII21-4012 & Soft Skill: Kemampuan Bekerjasama dan Kolaborasi & 2 & VIII \\
-                \bottomrule
-            \end{tabular}
-        \end{column}
-    \end{columns}
-\end{frame}
-}
+\section{Program Magang}
+\begin{frame}[plain]\sectionpage\end{frame}
 
-% 5. Overview Magang (produk & tools, dari draft)
-\section{Overview Magang}
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Produk dan Tools}
+\begin{contentframe}{Daftar Mata Kuliah MBKM}
+    \centering
     \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{Produk yang dibuat}\\[0.05cm]
-            \begin{enumerate}\setlength{\itemsep}{2pt}
-                \item \textbf{AI Agent dan AI-based automation pipeline}\\[0.02cm]
-                pada platform Digital Employee (weekly report, deteksi isu berulang, analytics).
-                \item \textbf{Identity and Access Management (IAM) SDK}\\[0.02cm]
-                pengembangan pada GL-IAM SDK.
-            \end{enumerate}
-        \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{Tools yang digunakan}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Python
-                \item Git \& GitHub
-                \item MCP (Model Context Protocol)
-                \item E2B sandbox, Google Drive API, OpenRouter
+    \begin{tabular}{@{}clp{0.57\textwidth}c@{}}
+        \toprule
+        \textbf{No.} & \textbf{Kode} & \textbf{Mata Kuliah} & \textbf{SKS} \\
+        \midrule
+        1 & MII21-3011 & Internship: Pengembangan Fitur dan Modul Proyek & 4 \\
+        2 & MII21-3013 & Internship: Implementasi Prototipe Produk & 4 \\
+        3 & MII21-3014 & Internship: Pengembangan Backend & 4 \\
+        4 & MII21-3015 & Internship: Pengujian Unit dan Modul Proyek & 3 \\
+        5 & MII21-3016 & Internship: Pengujian Integrasi dan Sistem & 3 \\
+        6 & MII21-4012 & Soft Skill: Kemampuan Bekerjasama dan Kolaborasi & 2 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.22cm}
+
+    \slidelead{Total: 20 SKS | fokus: Digital Employee, GL Connectors, dan GL-IAM}
+\end{contentframe}
+
+\begin{contentframe}{Hasil Magang}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.46\textwidth}
+            \textbf{Tiga keluarga produk}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Digital Employee Weekly Report dan Issue Reoccurrence.
+                \item Project Manager (Pamela) dan PM Datasaur.
+                \item GL-IAM SDK dan GL-IAM Cookbook.
             \end{itemize}
-            \vspace{0.08cm}
-            \textbf{Kontribusi}\\[0.05cm]
-            Lebih dari 130 commit di monorepo \texttt{digital-employee}, mencakup fitur, prototipe, backend, dan pengujian.
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \textbf{Bentuk kontribusi}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Feature dan pipeline agent di runtime AIP.
+                \item Migrasi pola tool ke GL Connectors SDK.
+                \item Atomicity, agent authentication, testing, dan deployment.
+            \end{itemize}
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{contentframe}
 
-% 5b. Arsitektur produk (high level)
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Arsitektur Produk yang Dibuat dan Di-maintain}
-    \diagramslide{00_high_level_arch.pdf}
-    \vspace{0.04cm}
-    \smallnote{Peta platform Digital Employee: aplikasi yang saya sentuh berjalan di runtime AIP, memakai GL Connectors untuk akses eksternal dan GL-IAM untuk identitas.}
-\end{frame}
-}
+\begin{contentframe}{Peta Produk dan Kontribusi}
+    \diagramslide[0.58\textheight]{00_high_level_arch.pdf}
+    \smallnote{Empat produk Digital Employee berjalan di AIP runtime dan berbagi akses eksternal melalui GL Connectors serta identitas melalui GL-IAM.}
+\end{contentframe}
 
-% ============================================================
-% COURSE 1 — MII-3011 Pengembangan Fitur dan Modul Proyek
-% ============================================================
-\section{Internship: Pengembangan Fitur dan Modul Proyek (MII-3011, 4 SKS)}
+\section{Pengembangan Fitur dan Modul Proyek}
+\courseframe{(1) Internship: Pengembangan Fitur dan Modul Proyek}{MII21-3011}{4}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Silabus}
+\begin{contentframe}{Silabus}
     \small
-    Mahasiswa dapat memberikan penjelasan dan mengimplementasikan fitur serta modul proyek pada kegiatan internship/MBKM, meliputi:
-    \begin{enumerate}\setlength{\itemsep}{2pt}
+    Mahasiswa dapat menjelaskan dan mengimplementasikan fitur serta modul proyek pada kegiatan internship/MBKM, meliputi:
+    \begin{enumerate}\setlength{\itemsep}{4pt}
         \item Deskripsi masalah dan upaya solusinya.
-        \item Gambaran umum proses bisnis dan logika sistem.
-        \item Deskripsi fitur-fitur / spesifikasi sistem yang dikembangkan.
-        \item Rancangan diagram / arsitektur modul.
+        \item Proses bisnis dan logika sistem.
+        \item Fitur atau spesifikasi sistem.
+        \item Rancangan diagram atau arsitektur modul.
     \end{enumerate}
-    \vspace{0.08cm}
-    \textbf{Mata Kuliah}: Internship: Pengembangan Fitur dan Modul Proyek\\
-    \textbf{Kode}: MII21-3011 \quad \textbf{Total SKS}: 4 \quad \textbf{Bab}: III
-\end{frame}
-}
+\end{contentframe}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Deskripsi Masalah dan Upaya Solusinya}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{Permasalahan}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Laporan mingguan berisi isu yang sama berulang tanpa pelacakan.
-                \item Tidak ada alat untuk mendeteksi isu yang berulang antar minggu.
-                \item Laporan kosong tidak terpantau / tidak dipastikan terkumpul.
-            \end{itemize}
-            \vspace{0.08cm}
-            \textbf{Solusi}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Pipeline deteksi dan eskalasi isu berulang (DE-WRI) dari nol.
-                \item Pipeline compliance laporan kosong (DE-WR).
-                \item E2B analytics agent untuk laporan MoM mingguan.
+\begin{comparisonframe}{Masalah dan Kontribusi: Weekly Report}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{Masalah}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Laporan mingguan dan isu tersebar di dokumen serta database.
+                \item Isu yang berulang antar minggu sulit dilacak.
+                \item Status eskalasi ke GitHub tidak terlihat dari satu tempat.
             \end{itemize}
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{Teknologi pendukung}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Python, gllm\_pipeline, LangChain BaseTool
-                \item Pydantic, MCP (google\_mail), SQL / PostgreSQL
-                \item E2B sandbox, OpenRouter, NER API
-                \item GitHub API, Google Drive API
+        \begin{column}{0.47\textwidth}
+            \textbf{Kontribusi}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item DE-WR mengingest, menormalisasi, dan menyimpan weekly report.
+                \item DE-WRI mendeteksi isu berulang lintas minggu.
+                \item Isu dieskalasi ke GitHub dan disinkronkan kembali ke database.
             \end{itemize}
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{comparisonframe}
 
-% Diagram: DE-WRI arsitektur
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{DE-WRI: Pipeline Eskalasi Isu Berulang}
-    \diagramslide{02_dewri.pdf}
-    \vspace{0.04cm}
-    \smallnote{Pipeline 5 langkah: ambil isu, deteksi berulang, cek GitHub, eskalasi, catat keputusan. Dijalankan terjadwal tiap minggu di runtime AIP.}
-\end{frame}
-}
+\begin{contentframe}{DE-WRI: Alur Eskalasi Isu Berulang}
+    \diagramslide[0.56\textheight]{02_dewri.pdf}
+    \smallnote{Lima langkah diorkestrasi sebagai satu weekly run: fetch, detect, lookup, change, lalu notify.}
+\end{contentframe}
 
-% Diagram: DE-WR
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{DE-WR: Tool dan Pipeline Laporan Mingguan}
-    \diagramslide{03_dewr.pdf}
-    \vspace{0.04cm}
-    \smallnote{Tool dan sub-agen untuk laporan mingguan: ingestor, compliance, email sender, dan jalur issue processing berbasis E2B.}
-\end{frame}
-}
+\begin{contentframe}{DE-WR dan DE-WRI: Satu Sumber Data}
+    \diagramslide[0.56\textheight]{11_dewr_dewri_data_dependency.pdf}
+    \smallnote{DE-WR menulis weekly reports dan issues; DE-WRI membaca data tersebut untuk mendeteksi recurrence dan melakukan eskalasi.}
+\end{contentframe}
 
-% Diagram: E2B analytics
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{DE-PM: E2B Analytics Agent (Laporan MoM)}
-    \diagramslide{04_e2b_analytics.pdf}
-    \vspace{0.04cm}
-    \smallnote{Agent membuat laporan MoM mingguan bergaya konsultan di dalam sandbox E2B, dari data Meemo, lalu mengirim PDF via email dengan tautan Drive.}
-\end{frame}
-}
+\section{Implementasi Prototip Produk}
+\courseframe{(2) Internship: Implementasi Prototip Produk}{MII21-3013}{4}
 
-% Diagram: data dependency
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Hubungan Data DE-WR dan DE-WRI}
-    \diagramslide{11_dewr_dewri_data_dependency.pdf}
-    \vspace{0.04cm}
-    \smallnote{DE-WR menulis data (weekly reports + issues) ke shared PostgreSQL; DE-WRI hanya membaca untuk mendeteksi isu berulang.}
-\end{frame}
-}
-
-% ============================================================
-% COURSE 2 — MII-3013 Implementasi Prototipe Produk
-% ============================================================
-\section{Internship: Implementasi Prototipe Produk (MII-3013, 4 SKS)}
-
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Silabus}
+\begin{contentframe}{Silabus}
     \small
-    Mahasiswa dapat mengimplementasikan suatu desain / rancangan spesifikasi sistem, aplikasi, atau prototipe pada kegiatan internship/MBKM, meliputi:
-    \begin{enumerate}\setlength{\itemsep}{2pt}
-        \item Deskripsi umum prototipe / aplikasi / sistem.
-        \item Tool pengembangan, library, atau add-in / plug-in yang digunakan.
-        \item Source code, hasil / tampilan, dan penjelasannya (berbasis fitur / modul).
+    Mahasiswa dapat mengimplementasikan rancangan spesifikasi sistem, aplikasi, atau prototipe pada kegiatan internship/MBKM, meliputi:
+    \begin{enumerate}\setlength{\itemsep}{4pt}
+        \item Deskripsi umum prototipe, aplikasi, atau sistem.
+        \item Tool pengembangan dan library yang digunakan.
+        \item Source code, hasil, tampilan, dan penjelasannya.
     \end{enumerate}
-    \vspace{0.08cm}
-    \textbf{Mata Kuliah}: Internship: Implementasi Prototipe Produk\\
-    \textbf{Kode}: MII21-3013 \quad \textbf{Total SKS}: 4 \quad \textbf{Bab}: IV
-\end{frame}
-}
+\end{contentframe}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Deskripsi Umum dan Tool Pengembangan}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{Prototipe yang dibangun}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item \textbf{E2B issue scoring}: menilai isu mingguan di dalam sandbox E2B terisolasi.
-                \item \textbf{E2B analytics agent}: laporan MoM bergaya konsultan.
-                \item \textbf{Pipeline PR feedback}: ringkasan review AI biweekly.
-                \item \textbf{Perbaikan memory leak} pada E2B issue processing runner.
+\begin{comparisonframe}{Prototipe: Pamela dan E2B Analytics}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{Project Manager (Pamela)}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Mengotomasi MoM, scheduling, GitHub reminders, dan analytics.
+                \item Menggunakan pola tool bersama dari GL Connectors SDK.
+                \item PM Datasaur mengagregasi pengetahuan lintas sumber.
             \end{itemize}
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{Tool dan teknologi}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item E2B sandbox (e2b\_code\_interpreter)
-                \item Python, Pydantic, Matplotlib, ReportLab
-                \item GitHub GraphQL, Google Drive, email
-                \item OpenAI / OpenRouter, NER API
+        \begin{column}{0.47\textwidth}
+            \textbf{E2B analytics agent}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Menjalankan Python secara terisolasi di E2B sandbox.
+                \item Menghasilkan laporan MoM dengan matplotlib dan ReportLab.
+                \item Mengirim PDF melalui email dengan tautan Drive.
             \end{itemize}
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{comparisonframe}
 
-% Diagram: E2B analytics (reuse)
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Arsitektur Prototipe E2B Analytics}
-    \diagramslide{04_e2b_analytics.pdf}
-    \vspace{0.04cm}
-    \smallnote{Pola inti prototipe: sandbox E2B menjalankan matplotlib dan ReportLab untuk PDF, data dari Meemo, LLM mengorkestrasi laporan, dan timeout yang layak produksi.}
-\end{frame}
-}
+\begin{contentframe}{E2B Analytics: Batas Eksekusi yang Aman}
+    \diagramslide[0.56\textheight]{04_e2b_analytics.pdf}
+    \smallnote{Data masuk ke agent, kode analitik dijalankan di sandbox terisolasi, lalu hasil dikirim sebagai laporan PDF.}
+\end{contentframe}
 
-% Kode prototipe
 {
 \usebackgroundtemplate{\backgroundcontent}
 \begin{frame}[fragile]
     \frametitle{Pola Inti Prototipe E2B}
-    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+    \begin{lstlisting}
 from e2b_code_interpreter import Sandbox
+
 sandbox = Sandbox(timeout=300)
 sandbox.run_code("""
 import matplotlib.pyplot as plt
-from reportlab.platypus import ...
+from reportlab.platypus import SimpleDocTemplate
 doc = SimpleDocTemplate("mom.pdf")
 doc.build(story)
 """)
     \end{lstlisting}
-    \vspace{0.06cm}
-    \smallnote{Empat poin kelayakan yang diuji: sandbox menjalankan matplotlib dan ReportLab, API Meemo sebagai sumber data, LLM mengorkestrasi laporan dan email, dan konfigurasi timeout untuk produksi.}
+    \vspace{0.08cm}
+    \smallnote{Timeout eksplisit dan sandbox terisolasi menjadi batas penting sebelum prototipe dipakai pada alur terjadwal.}
 \end{frame}
 }
 
-% Perbaikan memory leak
-{
-\usebackgroundtemplate{\backgroundcontent}
-\begin{frame}[fragile]
-    \frametitle{Perbaikan Memory Leak (E2B Issue Runner)}
-    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-# sebelum: kebocoran
-session = httpx.Client()
-response = session.post(url)
-client = OpenAI()
+\section{Pengembangan Backend}
+\courseframe{(3) Internship: Pengembangan Backend}{MII21-3014}{4}
 
-# sesudah: cleanup eksplisit
-try:
-    result = session.post(url,
-                          timeout=300).json()
-finally:
-    response.close()
-    session.close()
-    await client.close()
-    gc.collect()
-    \end{lstlisting}
-    \vspace{0.06cm}
-    \smallnote{Akar masalah: koneksi httpx dan klien OpenAI tidak ditutup, objek respons menumpuk. Perbaikannya: menutup semua resource secara eksplisit dan membuat memory\_benchmark.py sebagai test regresi.}
-\end{frame}
-}
-
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Hasil Prototipe}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{E2B issue scoring}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Menilai isu tanpa membahayakan lingkungan produksi.
-                \item Hasil LLM dibandingkan dengan penilaian manual PM.
-            \end{itemize}
-            \vspace{0.06cm}
-            \textbf{E2B analytics agent}\\[0.05cm]
-            Laporan MoM PDF dikirim mingguan; timeout dan resiliensi di-atasi.
-        \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{PR feedback pipeline}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Metrik review: durasi business-hours, keberadaan test, data mentah PR.
-                \item Autentikasi Drive via service account; paralel processing.
-            \end{itemize}
-            \vspace{0.06cm}
-            \textbf{Pelajaran}\\[0.05cm]
-            Timeout default yang tidak terdokumentasi adalah sumber bug; solusinya menuliskan timeout secara eksplisit.
-        \end{column}
-    \end{columns}
-\end{frame}
-}
-
-% ============================================================
-% COURSE 3 — MII-3014 Pengembangan Backend
-% ============================================================
-\section{Internship: Pengembangan Backend (MII-3014, 4 SKS)}
-
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Silabus}
+\begin{contentframe}{Silabus}
     \small
-    Mahasiswa dapat menyusun desain dan mengimplementasikan rancangan spesifikasi sistem pada sisi back-end / server, meliputi:
-    \begin{enumerate}\setlength{\itemsep}{2pt}
-        \item Deskripsi umum prototipe pada sisi back-end.
-        \item Tool pengembangan, library, atau hardware yang digunakan.
-        \item Konfigurasi server/sistem, atau konfigurasi sampel data / database.
-        \item Source code, SQL, tampilan hasil, dan penjelasannya.
+    Mahasiswa dapat menyusun dan mengimplementasikan rancangan spesifikasi pada sisi backend/server, meliputi:
+    \begin{enumerate}\setlength{\itemsep}{4pt}
+        \item Deskripsi umum backend.
+        \item Tool, library, atau hardware yang digunakan.
+        \item Konfigurasi server, data, dataset, atau database.
+        \item Source code, SQL/noSQL, hasil, dan penjelasannya.
     \end{enumerate}
-    \vspace{0.08cm}
-    \textbf{Kode}: MII21-3014 \quad \textbf{Total SKS}: 4 \quad \textbf{Bab}: V
-\end{frame}
-}
+\end{contentframe}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Deskripsi Umum dan Tool}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{Backend yang dikembangkan}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item GL-IAM SDK: manajemen identitas dan akses (SIMI abstraction).
-                \item Atomicity \texttt{create\_user\_with\_password}.
-                \item Cookbook: API key hierarchy, tutorial DPoP Keycloak.
-                \item Migrasi tool DE-PM dari MCP BOSA ke GLConnectors.
-                \item Deployment Helm dev dan prod.
+\begin{comparisonframe}{Backend: SDK, Provider, dan Integrasi}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{GL-IAM SDK}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Satu interface bekerja dengan banyak provider melalui SIMI.
+                \item Provider yang terdokumentasi: PostgreSQL, Keycloak, dan StackAuth.
+                \item Cookbook menyediakan contoh DPoP, API-key hierarchy, SSO, dan agent.
             \end{itemize}
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{Tool dan teknologi}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Python, PostgreSQL
-                \item Keycloak, Stack Auth
-                \item Helm, Kubernetes
-                \item GitHub Actions / CI/CD
-                \item GLConnectors SDK
+        \begin{column}{0.47\textwidth}
+            \textbf{GL Connectors}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Pola facade untuk SQL, GitHub, Gmail, Drive, dan layanan eksternal.
+                \item Mendukung refactor tool Pamela dari BOSA/MCP ke SDK bersama.
+                \item Deployment agent divalidasi melalui Helm dan CI/CD.
             \end{itemize}
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{comparisonframe}
 
-% Diagram: GL-IAM high level
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{GL-IAM SDK: Arsitektur High-Level}
-    \diagramslide{01_gl_iam_high_level.pdf}
-    \vspace{0.04cm}
-    \smallnote{GL-IAM menyediakan abstraksi SIMI (Single Interface, Multiple Implementation): satu interface, banyak penyedia autentikasi (PostgreSQL, Keycloak, Stack Auth).}
-\end{frame}
-}
+\begin{contentframe}{GL-IAM: Pola SIMI}
+    \diagramslide[0.56\textheight]{01_gl_iam_high_level.pdf}
+    \smallnote{Consumer memanggil IAMGateway; gateway bergantung pada protocol interface, sehingga provider dapat diganti melalui konfigurasi.}
+\end{contentframe}
 
-% Diagram: atomicity
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Backend: Atomicity create\_user\_with\_password}
-    \diagramslide{05_gl_iam_atomicity.pdf}
-    \vspace{0.04cm}
-    \smallnote{Pembuatan user dan password dalam satu transaksi di level penyedia, sehingga tidak menyisakan orphan user saat set password gagal.}
-\end{frame}
-}
+\begin{contentframe}{Kontribusi Backend: Atomicity}
+    \diagramslide[0.56\textheight]{05_gl_iam_atomicity.pdf}
+    \smallnote{User, credential, external identity, dan role ditulis dalam satu sesi dan satu commit; kegagalan memicu rollback tanpa orphan user.}
+\end{contentframe}
 
-% Diagram: agent auth
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{GL-IAM: Agent Authentication}
-    \diagramslide{05b_gl_iam_agent_auth.pdf}
-    \vspace{0.04cm}
-    \smallnote{GL-IAM mengotentikasi tidak hanya manusia tetapi juga AI agent, melalui delegation token dengan scope dan masa berlaku yang dibatasi.}
-\end{frame}
-}
+\begin{contentframe}{Kontribusi Backend: Agent Authentication}
+    \diagramslide[0.56\textheight]{05b_gl_iam_agent_auth.pdf}
+    \smallnote{Delegation token dibatasi oleh scope dan masa berlaku, lalu divalidasi sebelum agent mengakses layanan lain.}
+\end{contentframe}
 
-% Diagram: deployment
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Backend: Deployment Helm dan Migrasi GLConnectors}
-    \diagramslide{06_deployment.pdf}
-    \vspace{0.04cm}
-    \smallnote{Deployment ke dev dan prod via PR deploy dan pipeline CI/CD, dengan Helm ConfigMap/Secret, plus migrasi tool dari MCP BOSA ke GLConnectors SDK.}
-\end{frame}
-}
+\begin{contentframe}{Deployment: Dari Pull Request ke Runtime}
+    \diagramslide[0.56\textheight]{06_deployment.pdf}
+    \smallnote{Perubahan melewati pull request dan GitHub Actions, dideploy dengan Helm, lalu divalidasi melalui status job dan log.}
+\end{contentframe}
 
-% Kode atomicity
-{
-\usebackgroundtemplate{\backgroundcontent}
-\begin{frame}[fragile]
-    \frametitle{Implementasi Atomicity (PostgreSQLUserStoreMixin)}
-    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-# single-session atomic
-async def create_user_with_password(self, input):
-    async with self.session() as session:
-        user = User(**input.to_dict(...))
-        session.add(user)
-        credential = Credential(...)
-        session.add(credential)
-        if input.external_identity:
-            session.add(ExternalIdentity(...))
-        await session.commit()
-        return user
-    \end{lstlisting}
-    \vspace{0.06cm}
-    \smallnote{Masalah: transaksi terpisah menyisakan orphan user. Solusi: atomicity di level penyedia - satu sesi, satu commit untuk user, kredensial, external identity, dan role. 8 test gateway diperbarui.}
-\end{frame}
-}
+\section{Pengujian Unit dan Modul Proyek}
+\courseframe{(4) Internship: Pengujian Unit dan Modul Proyek}{MII21-3015}{3}
 
-% ============================================================
-% COURSE 4 — MII-3015 Pengujian Unit dan Modul
-% ============================================================
-\section{Internship: Pengujian Unit dan Modul Proyek (MII-3015, 3 SKS)}
-
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Silabus}
+\begin{contentframe}{Silabus}
     \small
-    Mahasiswa dapat menyusun dan menjalankan pengujian unit untuk modul yang dikembangkan, dengan target cakupan (coverage) tinggi, serta menganalisis dan memperbaiki kegagalan pengujian.
-    \vspace{0.08cm}
-    \textbf{Kode}: MII21-3015 \quad \textbf{Total SKS}: 3 \quad \textbf{Bab}: VI
-\end{frame}
-}
+    Mahasiswa dapat menyusun dan menjalankan pengujian unit untuk modul yang dikembangkan, mencapai cakupan tinggi, serta menganalisis dan memperbaiki kegagalan pengujian.
+\end{contentframe}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Pengujian Unit dan Modul}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{DE-WRI: FetchEmployeeIssuesTool}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item 56 unit test (model, db, keamanan, db\_utils).
-                \item 5 integration test dengan database sungguhan.
-                \item Cakupan 100\% pada modul fetch\_employee\_issues.
+\begin{comparisonframe}{Strategi Pengujian Unit dan Modul}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{DE-WRI}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item FetchEmployeeIssuesTool: model, database, dan utility.
+                \item Unit test dan integration test dengan database nyata.
+                \item Validasi identifier tabel untuk mencegah SQL injection.
             \end{itemize}
-            \vspace{0.06cm}
-            \textbf{Keamanan}\\[0.05cm]
-            Validasi nama tabel; pencegahan SQL injection; sanitasi identifier.
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{DE-WR}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Google Drive search: paginasi, cakupan 100\%.
-                \item Compliance email: auto-resolution, ejaan quarterly.
-                \item Deteksi kosong placeholder tepat 7.
-                \item Issue processing: JSON parsing, rescoring idempotency.
+        \begin{column}{0.47\textwidth}
+            \textbf{DE-WR}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Google Drive search dengan pagination.
+                \item Compliance email dan deteksi placeholder kosong.
+                \item JSON parsing dan rescoring yang idempotent.
             \end{itemize}
-            \vspace{0.06cm}
-            \slidelead{pytest -n 4; pytest-cov; fixture mock MCP}
         \end{column}
     \end{columns}
-\end{frame}
-}
+    \vspace{0.1cm}
+    \slidelead{pytest + coverage + fixture MCP sebagai quality gates}
+\end{comparisonframe}
 
-% Diagram: testing
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Peta Pengujian}
-    \diagramslide{07_testing.pdf}
-    \vspace{0.04cm}
-    \smallnote{Pengujian unit dan integrasi dijalankan dengan pytest dan cakupan tinggi, termasuk pengujian keamanan pencegahan SQL injection.}
-\end{frame}
-}
+\begin{contentframe}{Peta Pengujian}
+    \diagramslide[0.56\textheight]{07_testing.pdf}
+    \smallnote{Unit, security, integration, dan end-to-end test membentuk satu jalur quality gate dari modul hingga deployment.}
+\end{contentframe}
 
-% ============================================================
-% COURSE 5 — MII-3016 Pengujian Integrasi dan Sistem
-% ============================================================
-\section{Internship: Pengujian Integrasi dan Sistem (MII-3016, 3 SKS)}
+\section{Pengujian Integrasi dan Sistem}
+\courseframe{(5) Internship: Pengujian Integrasi dan Sistem}{MII21-3016}{3}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Silabus}
+\begin{contentframe}{Silabus}
     \small
-    Mahasiswa dapat melaksanakan pengujian integrasi antar komponen, termasuk pengujian end-to-end dan validasi deployment, memastikan sistem berfungsi sebagai satu kesatuan di lingkungan yang menyerupai produksi.
-    \vspace{0.08cm}
-    \textbf{Kode}: MII21-3016 \quad \textbf{Total SKS}: 3 \quad \textbf{Bab}: VII
-\end{frame}
-}
+    Mahasiswa dapat melaksanakan pengujian integrasi antar komponen, end-to-end, dan validasi deployment pada lingkungan yang menyerupai produksi.
+\end{contentframe}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Pengujian Integrasi dan Sistem}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{Playwright E2E: alur MoM}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Pengecekan integrasi Meemo.
-                \item Cari dokumen MoM di Drive, konversi ke HTML.
-                \item Kirim email ke peserta.
-                \item Skenario otomatis dari seed hingga validasi.
+\begin{comparisonframe}{Integrasi: Dari Data hingga Deployment}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{Skenario end-to-end}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Seed data dan jalankan alur MoM.
+                \item Cari dokumen di Drive dan konversi ke HTML.
+                \item Kirim email ke peserta dan validasi hasil.
             \end{itemize}
-            \vspace{0.06cm}
-            \textbf{Playwright E2E: DE-PM-Datasaur}\\[0.02cm]
-            globalSetup/Teardown, page objects Slack, seed data + helper MCP, spec utama 274 baris.
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{Konsolidasi integration test}\\[0.05cm]
-            Dari per-proyek ke pola env-driven single-agent.
-            \vspace{0.06cm}
-            \textbf{Deployment dan CI/CD}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item PR deploy dev/prod.
-                \item Tangani inkonsistensi konfigurasi.
-                \item Validasi CronJob: log output dan status akhir.
+        \begin{column}{0.47\textwidth}
+            \textbf{Validasi sistem}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Playwright untuk MoM dan PM Datasaur.
+                \item Environment-driven single-agent pattern.
+                \item PR deploy, CronJob status, dan log output diperiksa sebagai satu alur.
             \end{itemize}
-            \vspace{0.06cm}
-            \slidelead{Pola env-driven single-agent: tambah skenario tanpa boilerplate baru}
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{comparisonframe}
 
-% Diagram: testing reuse
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Peta Pengujian Integrasi}
-    \diagramslide{07_testing.pdf}
-    \vspace{0.04cm}
-    \smallnote{End-to-end Playwright untuk alur MoM dan Datasaur, plus konsolidasi integration test menjadi pola env-driven.}
-\end{frame}
-}
+\section{Kemampuan Bekerjasama dan Kolaborasi}
+\courseframe{(6) Soft Skill: Kemampuan Bekerjasama dan Kolaborasi}{MII21-4012}{2}
 
-% ============================================================
-% COURSE 6 — Soft Skill
-% ============================================================
-\section{Soft Skill: Kemampuan Bekerjasama dan Kolaborasi (MII-4012, 2 SKS)}
-
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Silabus}
+\begin{contentframe}{Silabus}
     \small
     Mahasiswa mengembangkan kemampuan bekerja sama dan berkolaborasi dalam tim, termasuk komunikasi teknis, code review, dan manajemen proyek.
-    \vspace{0.08cm}
-    \textbf{Kode}: MII21-4012 \quad \textbf{Total SKS}: 2 \quad \textbf{Bab}: VIII
-\end{frame}
-}
+    \begin{enumerate}\setlength{\itemsep}{4pt}
+        \item Menyampaikan progres dan kendala secara jelas.
+        \item Menerima serta menindaklanjuti feedback.
+        \item Menjaga kualitas perubahan melalui review dan pengujian.
+    \end{enumerate}
+\end{contentframe}
 
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Kemampuan Bekerjasama dan Kolaborasi}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{Agile/Scrum}\\[0.05cm]
-            Daily stand-up (15 menit), sprint planning, sprint review, retrospektif (sprint 2--4 minggu).
-            \vspace{0.06cm}
-            \textbf{Code review}\\[0.05cm]
-            Setiap perubahan direview rekan; AI pr-agent sebagai masukan awal; keputusan akhir di reviewer manusia.
+\begin{comparisonframe}{Kolaborasi: Praktik dan Pembelajaran}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{Praktik kerja}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Perubahan melalui pull request dan code review.
+                \item Issue/progress dikelola dengan GitHub Projects.
+                \item Feedback mentor diterjemahkan menjadi perubahan kode dan test.
+            \end{itemize}
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{GitHub Projects}\\[0.05cm]
-            To Do, In Progress, In Review, Done.
-            \vspace{0.06cm}
-            \textbf{Feedback yang mengubah cara menulis kode}\\[0.05cm]
-            Eksternal SQL ke file \texttt{.sql}, sanitize identifier, tangani konfigurasi hilang eksplisit, coverage penuh.
+        \begin{column}{0.47\textwidth}
+            \textbf{Pembelajaran}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Dokumentasikan konfigurasi dan timeout secara eksplisit.
+                \item Debugging dimulai dari akar masalah dan bukti log/test.
+                \item AI membantu analisis awal; keputusan akhir tetap melalui reviewer manusia.
+            \end{itemize}
         \end{column}
     \end{columns}
-\end{frame}
-}
+\end{comparisonframe}
 
-% ============================================================
-% PENUTUP
-% ============================================================
 \section{Kesimpulan dan Saran}
-{\usebackgroundtemplate{\backgroundcontent}\begin{frame}%
-    \frametitle{Kesimpulan}
-    \scriptsize
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \textbf{Kesimpulan}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Pipeline DE-WRI dari nol hingga produksi.
-                \item E2B analytics agent untuk laporan MoM mingguan.
-                \item Atomicity GL-IAM di level penyedia data.
-                \item Pengujian: cakupan 100\%, Playwright E2E, konsolidasi test.
+\begin{contentframe}{Kesimpulan}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.46\textwidth}
+            \textbf{Kontribusi teknis}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Membangun alur Weekly Report dan Issue Reoccurrence di AIP.
+                \item Mengembangkan prototipe analytics berbasis E2B.
+                \item Memperkuat GL-IAM dengan SIMI, atomicity, dan agent auth.
             \end{itemize}
         \end{column}
-        \begin{column}{0.48\textwidth}
-            \textbf{Saran}\\[0.05cm]
-            \begin{itemize}\setlength{\itemsep}{2pt}
-                \item Runbook untuk kegagalan CI/CD.
-                \item Standar timeout eksplisit untuk sandbox AI.
-                \item Praktik Agile di kurikulum proyek.
-                \item Pola SDK (SIMI, provider protocol) di perkuliahan.
+        \begin{column}{0.46\textwidth}
+            \textbf{Kompetensi yang terbentuk}\par
+            \begin{itemize}\setlength{\itemsep}{3pt}
+                \item Backend, integrasi layanan, dan deployment.
+                \item Testing berlapis dari unit hingga E2E.
+                \item Kolaborasi, dokumentasi, dan debugging sistematis.
             \end{itemize}
         \end{column}
     \end{columns}
-\end{frame}
-}
+    \vspace{0.18cm}
+    \slidelead{Sekitar 350 author commits tercatat pada tiga keluarga produk yang didokumentasikan di GL.}
+\end{contentframe}
 
-% Terima kasih (quote slide per theme)
 \quoteslide{Terima Kasih\\[0.2cm]
-\scriptsize Lokal Berakar, Diakui Global}
+    \scriptsize Mengakar Kuat, Menjulang Tinggi}
 
 \end{document}
