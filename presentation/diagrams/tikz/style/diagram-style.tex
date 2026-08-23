@@ -1,0 +1,23 @@
+\definecolor{ugmblue}{HTML}{194168}
+\definecolor{ugmyellow}{HTML}{F6D648}
+\definecolor{diagramgreen}{RGB}{76,175,80}
+\definecolor{diagramred}{RGB}{198,83,83}
+
+\tikzset{
+    appbox/.style={rectangle, rounded corners=3pt, draw=ugmblue,
+        fill=ugmblue!8, text width=3.0cm, minimum height=0.78cm,
+        align=center, inner sep=4pt, font=\sffamily\small},
+    processbox/.style={rectangle, rounded corners=3pt, draw=diagramgreen,
+        fill=diagramgreen!10, text width=3.0cm, minimum height=0.78cm,
+        align=center, inner sep=4pt, font=\sffamily\small},
+    externalbox/.style={rectangle, rounded corners=3pt, draw=diagramred,
+        fill=diagramred!10, text width=3.0cm, minimum height=0.78cm,
+        align=center, inner sep=4pt, font=\sffamily\small},
+    smallbox/.style={rectangle, rounded corners=3pt, draw=#1,
+        fill=#1!8, text width=2.4cm, minimum height=0.7cm,
+        align=center, inner sep=4pt, font=\sffamily\small},
+    groupbox/.style={rectangle, rounded corners=5pt, draw=#1,
+        fill=#1!5, inner sep=8pt, line width=1.1pt},
+    arrow/.style={-{Latex[length=2mm]}, draw=gray!75, line width=0.9pt},
+    grouplabel/.style={font=\sffamily\bfseries\small}
+}

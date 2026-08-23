@@ -1,42 +1,31 @@
 \documentclass[tikz,border=8pt]{standalone}
 \usepackage{tikz}
-\usetikzlibrary{positioning,fit,backgrounds,calc,arrows.meta}
+\usetikzlibrary{positioning,fit,calc,arrows.meta}
 \usepackage{xcolor}
-
-\definecolor{ugmblue}{HTML}{194168}
-\definecolor{degreen}{RGB}{76,175,80}
-\definecolor{dered}{RGB}{229,115,115}
+\input{style/diagram-style}
 
 \begin{document}
-\begin{tikzpicture}[
-    node distance=0.4cm and 0.5cm,
-    box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=2.9cm, minimum height=0.72cm, align=center,
-                line width=0.9pt, font=\large},
-    group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
-                  inner sep=6pt, line width=1.1pt},
-    arr/.style={-{Latex[length=2mm]}, line width=0.9pt, draw=gray!60},
-    lbl/.style={font=\large\bfseries}
-]
+\begin{tikzpicture}[node distance=0.55cm and 0.5cm]
+    \node[appbox] (caller) {Application\\caller};
+    \node[appbox, right=of caller] (gateway) {IAMGateway\\delegates request};
+    \node[processbox, right=of gateway] (provider) {PostgreSQLUserStoreMixin\\provider layer};
+    \node[processbox, right=of provider] (session) {One DB session\\one transaction};
 
-% Top: app -> gateway -> provider
-\node[box=ugmblue] (app) {app};
-\node[box=ugmblue, right=1.0cm of app] (gw) {IAMGateway\\create\_user\_with\_password};
-\node[box=degreen, right=1.0cm of gw] (prov) {PostgreSQLUserStoreMixin\\one transaction};
-\node[group=degreen, fit=(prov), label={[lbl]above:Provider level}] (provgrp) {};
+    \node[smallbox=diagramred, below=1.0cm of session, xshift=-3.9cm] (user) {users row};
+    \node[smallbox=diagramred, right=0.25cm of user] (credential) {local\_credentials};
+    \node[smallbox=diagramred, right=0.25cm of credential] (identity) {external\_identity};
+    \node[smallbox=diagramred, right=0.25cm of identity] (roles) {roles};
+    \node[groupbox=diagramred, fit=(user)(credential)(identity)(roles),
+        label={[grouplabel]below:Atomic writes}] (writes) {};
 
-% Bottom: rows
-\node[box=dered, below=1.0cm of gw] (r1) {user row};
-\node[box=dered, right=0.3cm of r1] (r2) {local\_credentials};
-\node[box=dered, right=0.3cm of r2] (r3) {external\_identity};
-\node[box=dered, right=0.3cm of r3] (r4) {roles};
-\node[group=dered, fit=(r1)(r2)(r3)(r4),
-      label={[lbl]below:atomic \textbullet{} no orphan user}] (rows) {};
+    \node[processbox, below=0.8cm of session] (commit) {single COMMIT\\all writes succeed};
+    \node[externalbox, right=0.55cm of commit] (rollback) {ROLLBACK\\no orphan user};
 
-\draw[arr] (app.east) -- (gw.west);
-\draw[arr] (gw.east) -- (prov.west);
-\draw[arr] (gw.south) -- (r1.north);
-\draw[arr] (prov.south) -- (rows.north);
-
+    \draw[arrow] (caller) -- (gateway);
+    \draw[arrow] (gateway) -- (provider);
+    \draw[arrow] (provider) -- (session);
+    \draw[arrow] (session.south) -- (writes.north);
+    \draw[arrow] (writes.south) -- (commit.north);
+    \draw[arrow] (writes.east) -| (rollback.north);
 \end{tikzpicture}
 \end{document}

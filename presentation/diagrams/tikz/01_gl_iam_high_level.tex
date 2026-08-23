@@ -1,50 +1,33 @@
 \documentclass[tikz,border=8pt]{standalone}
 \usepackage{tikz}
-\usetikzlibrary{positioning,fit,backgrounds,calc,arrows.meta}
+\usetikzlibrary{positioning,fit,calc,arrows.meta}
 \usepackage{xcolor}
-
-\definecolor{ugmblue}{HTML}{194168}
-\definecolor{degreen}{RGB}{76,175,80}
-\definecolor{dered}{RGB}{229,115,115}
+\input{style/diagram-style}
 
 \begin{document}
-\begin{tikzpicture}[
-    node distance=0.35cm and 0.4cm,
-    box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=3.1cm, minimum height=0.62cm, align=center,
-                line width=0.9pt, font=\large},
-    group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
-                  inner sep=6pt, line width=1.2pt},
-    arr/.style={-{Latex[length=2mm]}, line width=0.9pt, draw=gray!60},
-    lbl/.style={font=\large\bfseries}
-]
+\begin{tikzpicture}[node distance=0.3cm and 0.9cm]
+    \node[appbox] (fastapi) {FastAPI dependencies\\get\_current\_user};
+    \node[appbox, below=of fastapi] (django) {Django + DRF\\authentication backends};
+    \node[appbox, below=of django] (cli) {GL-IAM CLI};
+    \node[groupbox=ugmblue, fit=(fastapi)(django)(cli),
+        label={[grouplabel]above:Consumers}] (consumers) {};
 
-% Consumers (top)
-\node[box=ugmblue] (c1) {FastAPI deps\\(get\_current\_user)};
-\node[box=ugmblue, below=0.28cm of c1] (c2) {Django + DRF\\(auth backends)};
-\node[box=ugmblue, below=0.28cm of c2] (c3) {GL-IAM CLI};
-\node[group=ugmblue, fit=(c1)(c2)(c3),
-      label={[lbl]above:Consumers}] (cons) {};
+    \node[processbox, right=1.3cm of fastapi] (gateway) {IAMGateway\\central orchestrator};
+    \node[processbox, below=of gateway] (auth) {AuthenticationProvider};
+    \node[processbox, below=of auth] (session) {SessionProvider};
+    \node[processbox, below=of session] (users) {UserStoreProvider\\RBAC};
+    \node[processbox, below=of users] (keys) {ApiKeyProvider\\three-tier keys};
+    \node[processbox, below=of keys] (agents) {AgentProvider\\delegation auth};
+    \node[groupbox=diagramgreen, fit=(gateway)(auth)(session)(users)(keys)(agents),
+        label={[grouplabel]above:Protocol interfaces}] (protocols) {};
 
-% Protocols (center)
-\node[box=degreen, right=1.6cm of c1] (g1) {IAMGateway};
-\node[box=degreen, below=0.28cm of g1] (g2) {AuthenticationProvider};
-\node[box=degreen, below=0.28cm of g2] (g3) {SessionProvider};
-\node[box=degreen, below=0.28cm of g3] (g4) {UserStoreProvider (RBAC)};
-\node[box=degreen, below=0.28cm of g4] (g5) {ApiKeyProvider (3-tier)};
-\node[box=degreen, below=0.28cm of g5] (g6) {AgentProvider};
-\node[group=degreen, fit=(g1)(g2)(g3)(g4)(g5)(g6),
-      label={[lbl]above:Protocols (interfaces)}] (proto) {};
+    \node[externalbox, right=1.3cm of gateway] (postgres) {PostgreSQL\\SQLAlchemy provider};
+    \node[externalbox, below=0.55cm of postgres] (keycloak) {Keycloak};
+    \node[externalbox, below=0.55cm of keycloak] (stackauth) {StackAuth};
+    \node[groupbox=diagramred, fit=(postgres)(keycloak)(stackauth),
+        label={[grouplabel]above:Provider implementations}] (providers) {};
 
-% Implementations (right)
-\node[box=dered, right=1.6cm of g1] (i1) {PostgreSQL};
-\node[box=dered, below=0.45cm of i1] (i2) {Keycloak};
-\node[box=dered, below=0.35cm of i2] (i3) {StackAuth};
-\node[group=dered, fit=(i1)(i2)(i3),
-      label={[lbl]above:Implementations}] (impl) {};
-
-\draw[arr] (cons.east) -- (proto.west);
-\draw[arr] (proto.east) -- (impl.west);
-
+    \draw[arrow] (consumers.east) -- (protocols.west);
+    \draw[arrow] (protocols.east) -- (providers.west);
 \end{tikzpicture}
 \end{document}

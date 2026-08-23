@@ -1,53 +1,39 @@
 \documentclass[tikz,border=8pt]{standalone}
 \usepackage{tikz}
-\usetikzlibrary{positioning,fit,backgrounds,calc,arrows.meta}
+\usetikzlibrary{positioning,fit,calc,arrows.meta}
 \usepackage{xcolor}
-
-\definecolor{ugmblue}{HTML}{194168}
-\definecolor{degreen}{RGB}{76,175,80}
-\definecolor{dered}{RGB}{229,115,115}
+\input{style/diagram-style}
 
 \begin{document}
-\begin{tikzpicture}[
-    node distance=0.4cm and 0.6cm,
-    box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=3.2cm, minimum height=0.8cm, align=center,
-                line width=0.9pt, font=\large},
-    group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
-                  inner sep=7pt, line width=1.2pt},
-    arr/.style={-{Latex[length=2mm]}, line width=0.9pt, draw=gray!60},
-    lbl/.style={font=\large\bfseries}
-]
+\begin{tikzpicture}[node distance=0.55cm and 0.8cm]
+    \node[externalbox] (sources) {Google / Meemo\\GitHub / Drive};
+    \node[processbox, right=of sources] (connectors) {GL Connectors SDK\\external-service facade};
+    \node[groupbox=diagramred, fit=(sources)(connectors),
+        label={[grouplabel]above:External services}] (external) {};
 
-% Top-left: External
-\node[box=ugmblue] (ext1) {Google \textbullet{} Meemo\\ \textbullet{} GitHub};
-\node[box=ugmblue, below=0.3cm of ext1] (glc) {GL Connectors};
-\node[group=ugmblue, fit=(ext1)(glc), label={[lbl]above:External}] (ext) {};
+    \node[appbox, right=1.2cm of connectors] (runtime) {AIP runtime\\digital\_employee\_core};
+    \node[groupbox=ugmblue, fit=(runtime),
+        label={[grouplabel]above:Digital Employee}] (aip) {};
 
-% Top-center: AIP runtime
-\node[box=ugmblue, right=0.8cm of ext1] (core) {digital\_employee\_core\\ + glaip-sdk};
-\node[group=ugmblue, fit=(core), label={[lbl]above:Digital Employee\\AIP runtime}] (de) {};
+    \node[processbox, right=1.2cm of runtime] (iam) {GL-IAM SDK\\SIMI identity layer};
+    \node[externalbox, below=0.45cm of iam] (cookbook) {GL-IAM Cookbook\\integration examples};
+    \node[groupbox=diagramred, fit=(iam)(cookbook),
+        label={[grouplabel]above:Shared identity}] (shared) {};
 
-% Top-right: Shared SDKs
-\node[box=dered, right=0.8cm of core] (sdk1) {GL-IAM SDK};
-\node[box=dered, below=0.3cm of sdk1] (sdk2) {PostgreSQL};
-\node[box=dered, below=0.3cm of sdk2] (sdk3) {Keycloak \textbullet{} StackAuth};
-\node[group=dered, fit=(sdk1)(sdk2)(sdk3),
-      label={[lbl]above:Shared SDKs (gl-sdk)}] (sdk) {};
+    \node[appbox, below=1.15cm of runtime, xshift=-2.6cm] (weekly) {Weekly Report\\Claudia};
+    \node[appbox, right=0.35cm of weekly] (recur) {Issue Reoccurrence\\escalation + sync};
+    \node[appbox, right=0.35cm of recur] (pamela) {Project Manager\\Pamela};
+    \node[appbox, right=0.35cm of pamela] (datasaur) {PM Datasaur\\knowledge aggregation};
+    \node[groupbox=ugmblue, fit=(weekly)(recur)(pamela)(datasaur),
+        label={[grouplabel]below:Product families from de-main}] (products) {};
 
-% Bottom: 4 apps
-\node[box=degreen, below=1.0cm of core] (wr) {Weekly Report};
-\node[box=degreen, right=0.4cm of wr] (wri) {Issue Recurrence};
-\node[box=degreen, right=0.4cm of wri] (pm) {Project Manager};
-\node[box=degreen, right=0.4cm of pm] (pmd) {PM Datasaur};
-\node[group=degreen, fit=(wr)(wri)(pm)(pmd),
-      label={[lbl]below:Intern work (de-main)}] (apps) {};
-
-\draw[arr] (ext1.east) -- (core.west);
-\draw[arr] (glc.east) -- (core.west);
-\draw[arr] (core.east) -- (sdk1.west);
-\draw[arr] (core.south) -- (wr.north);
-\draw[arr] (core.south) -- (wri.north);
-
+    \draw[arrow] (sources) -- (connectors);
+    \draw[arrow] (connectors) -- (runtime);
+    \draw[arrow] (runtime) -- (iam);
+    \draw[arrow] (runtime.south) -- (weekly.north);
+    \draw[arrow] (runtime.south) -- (recur.north);
+    \draw[arrow] (runtime.south) -- (pamela.north);
+    \draw[arrow] (runtime.south) -- (datasaur.north);
+    \draw[arrow] (iam.south) -- (cookbook.north);
 \end{tikzpicture}
 \end{document}

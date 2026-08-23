@@ -1,45 +1,26 @@
 \documentclass[tikz,border=8pt]{standalone}
 \usepackage{tikz}
-\usetikzlibrary{positioning,fit,backgrounds,calc,arrows.meta}
+\usetikzlibrary{positioning,fit,calc,arrows.meta}
 \usepackage{xcolor}
-
-\definecolor{ugmblue}{HTML}{194168}
-\definecolor{degreen}{RGB}{76,175,80}
-\definecolor{dered}{RGB}{229,115,115}
+\input{style/diagram-style}
 
 \begin{document}
-\begin{tikzpicture}[
-    node distance=0.4cm and 0.5cm,
-    box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=2.9cm, minimum height=0.7cm, align=center,
-                line width=0.9pt, font=\large},
-    group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
-                  inner sep=6pt, line width=1.1pt},
-    arr/.style={-{Latex[length=2mm]}, line width=0.9pt, draw=gray!60},
-    lbl/.style={font=\large\bfseries}
-]
+\begin{tikzpicture}[node distance=0.55cm and 0.65cm]
+    \node[appbox] (human) {Human user\\session JWT};
+    \node[processbox, right=of human] (issue) {Issue delegation\\token};
+    \node[processbox, right=of issue] (token) {Scoped, expiring\\delegation token};
+    \node[appbox, right=of token] (agent) {AI agent\\cross-service caller};
+    \node[processbox, right=of agent] (validate) {Validate token\\scope + expiry};
+    \node[processbox, below=0.75cm of validate, xshift=-1.6cm] (allow) {Authorize\\scope within parent};
+    \node[externalbox, right=0.35cm of allow] (deny) {Deny\\revoked or expired};
+    \node[groupbox=diagramgreen, fit=(issue)(token)(validate)(allow),
+        label={[grouplabel]above:GL-IAM delegation}] (delegation) {};
 
-% Top row: human -> token issue -> agent
-\node[box=ugmblue] (human) {human};
-\node[box=ugmblue, below=0.3cm of human] (usess) {user session JWT};
-\node[group=ugmblue, fit=(human)(usess)] (usergrp) {};
-
-\node[box=degreen, right=1.2cm of human] (issue) {create\_delegation\\token};
-\node[box=degreen, below=0.3cm of issue] (jwt) {JWT delegation\\token};
-
-\node[box=dered, right=1.2cm of issue] (agent) {AI agent};
-\node[box=dered, below=0.3cm of agent] (validate) {validate\_delegation\\token stateless};
-
-% Outcomes (bottom row)
-\node[box=degreen, below=1.2cm of jwt] (authz) {authorize\\scopes $\subseteq$ parent};
-\node[box=dered, below=0.3cm of authz] (deny) {deny\\revoked / expired};
-
-\draw[arr] (usess.east) -- (issue.west);
-\draw[arr] (issue.south) -- (jwt.north);
-\draw[arr] (issue.east) -- (agent.west);
-\draw[arr] (agent.south) -- (validate.north);
-\draw[arr] (jwt.south) -- (authz.north);
-\draw[arr] (validate.south) -- (deny.north);
-
+    \draw[arrow] (human) -- (issue);
+    \draw[arrow] (issue) -- (token);
+    \draw[arrow] (token) -- (agent);
+    \draw[arrow] (agent) -- (validate);
+    \draw[arrow] (validate.south) -- (allow.north);
+    \draw[arrow] (validate.south) -- (deny.north);
 \end{tikzpicture}
 \end{document}
