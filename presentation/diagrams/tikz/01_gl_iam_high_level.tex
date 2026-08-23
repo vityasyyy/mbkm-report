@@ -1,0 +1,55 @@
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,backgrounds,calc,arrows.meta}
+\usepackage{xcolor}
+
+\definecolor{ugmblue}{HTML}{194168}
+\definecolor{ugmyellow}{HTML}{f6d648}
+\definecolor{degreen}{RGB}{76,175,80}
+\definecolor{dered}{RGB}{229,115,115}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=0.4cm and 0.6cm,
+    box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
+                minimum width=3.0cm, minimum height=0.62cm, align=center,
+                line width=0.8pt, font=\scriptsize},
+    proto/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
+                  minimum width=2.6cm, minimum height=0.56cm, align=center,
+                  line width=0.8pt, font=\scriptsize},
+    group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
+                  inner sep=7pt, line width=1.2pt},
+    arr/.style={-{Latex[length=1.8mm]}, line width=0.8pt, draw=gray!60},
+    lbl/.style={font=\scriptsize\bfseries}
+]
+
+% Consumers
+\node[proto=ugmblue] (fastapi) {FastAPI deps\\(get\_current\_user \textbullet{} require\_*)};
+\node[proto=ugmblue, below=0.4cm of fastapi] (drf) {Django + DRF\\(backends \textbullet{} auth classes)};
+\node[proto=ugmblue, below=0.4cm of drf] (cli) {GL-IAM CLI};
+\node[group=ugmblue, fit=(fastapi)(drf)(cli),
+      label={[lbl]above:Consumers (framework integrations)}] (cons) {};
+
+% Protocols
+\node[proto=degreen, right=2.4cm of fastapi] (gateway) {IAMGateway\\central orchestrator \textbullet{} Result[T]};
+\node[proto=degreen, below=0.35cm of gateway] (p1) {AuthenticationProvider};
+\node[proto=degreen, below=0.25cm of p1] (p2) {SessionProvider};
+\node[proto=degreen, below=0.25cm of p2] (p3) {UserStoreProvider (RBAC)};
+\node[proto=degreen, below=0.25cm of p3] (p4) {OrganizationProvider};
+\node[proto=degreen, below=0.25cm of p4] (p5) {ApiKeyProvider (3-tier)};
+\node[proto=degreen, below=0.25cm of p5] (p6) {AgentProvider (agent auth)};
+\node[group=degreen, fit=(gateway)(p1)(p2)(p3)(p4)(p5)(p6),
+      label={[lbl]above:Protocols (interfaces)}] (proto) {};
+
+% Implementations
+\node[proto=ugmyellow!70!black, right=2.4cm of gateway] (pg) {PostgreSQL};
+\node[proto=ugmyellow!70!black, below=0.5cm of pg] (kc) {Keycloak};
+\node[proto=ugmyellow!70!black, below=0.4cm of kc] (sa) {StackAuth};
+\node[group=ugmyellow!50!black, fit=(pg)(kc)(sa),
+      label={[lbl]above:Implementations (SIMI --- plug \& play)}] (impl) {};
+
+\draw[arr] (cons.east) -- (proto.west);
+\draw[arr] (proto.east) -- (impl.west);
+
+\end{tikzpicture}
+\end{document}

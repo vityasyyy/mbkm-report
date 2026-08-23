@@ -1,0 +1,45 @@
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,backgrounds,calc,arrows.meta}
+\usepackage{xcolor}
+
+\definecolor{ugmblue}{HTML}{194168}
+\definecolor{degreen}{RGB}{76,175,80}
+\definecolor{dered}{RGB}{229,115,115}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=0.4cm and 0.5cm,
+    box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
+                minimum width=2.9cm, minimum height=0.55cm, align=center,
+                line width=0.8pt, font=\scriptsize},
+    group/.style={rectangle, rounded corners=5pt, draw=ugmblue, fill=ugmblue!5,
+                  inner sep=6pt, line width=1.1pt},
+    arr/.style={-{Latex[length=1.8mm]}, line width=0.8pt, draw=gray!60},
+    lbl/.style={font=\scriptsize\bfseries}
+]
+
+% Human + agent
+\node[box=ugmblue] (human) {human};
+\node[box=ugmblue, below=0.4cm of human] (usess) {user session JWT};
+
+\node[box=dered, right=2.4cm of human] (agent) {AI agent};
+\node[box=dered, below=0.4cm of agent] (validate) {validate\_delegation\\token stateless};
+
+% Token issue
+\node[box=degreen, below=2.0cm of usess] (issue) {create\_delegation\_token};
+\node[box=degreen, below=0.4cm of issue] (jwt) {JWT delegation token};
+
+% Outcomes
+\node[box=degreen, right=2.2cm of jwt] (authz) {authorize\\scopes $\subseteq$ parent};
+\node[box=dered, below=0.4cm of authz] (deny) {deny\\revoked / expired};
+
+\draw[arr] (human.south) -- (usess.north);
+\draw[arr] (usess.south) -- (issue.north);
+\draw[arr] (issue.south) -- (jwt.north);
+\draw[arr] (jwt.east) -- (authz.west);
+\draw[arr] (validate.west) -- (issue.east);
+\draw[arr] (agent.south) -- (validate.north);
+
+\end{tikzpicture}
+\end{document}
