@@ -23,10 +23,6 @@
         label={[grouplabel]below:Data and external services}] (data) {};
 
     \draw[arrow] (coord.south) -- (subagents.north);
-    \draw[arrow] (ingest.south) -- (sql.north);
-    \draw[arrow] (qna.south) -- (sql.north);
-    \draw[arrow] (update.south) -- (pg.north);
-    \draw[arrow] (sender.south) -- (drive.north);
-    \draw[arrow] (e2b.south) -- (drive.north);
+    \draw[arrow] (subagents.south) -- (data.north);
 \end{tikzpicture}
 \end{document}

@@ -20,20 +20,17 @@
     \node[groupbox=diagramred, fit=(iam)(cookbook),
         label={[grouplabel]above:Shared identity}] (shared) {};
 
-    \node[appbox, below=1.15cm of runtime, xshift=-2.6cm] (weekly) {Weekly Report\\Claudia};
-    \node[appbox, right=0.35cm of weekly] (recur) {Issue Reoccurrence\\escalation + sync};
-    \node[appbox, right=0.35cm of recur] (pamela) {Project Manager\\Pamela};
-    \node[appbox, right=0.35cm of pamela] (datasaur) {PM Datasaur\\knowledge aggregation};
+    \node[smallbox=ugmblue, below=1.15cm of runtime, xshift=-2.0cm] (weekly) {Weekly Report\\Claudia};
+    \node[smallbox=ugmblue, right=0.3cm of weekly] (recur) {Issue Reoccurrence\\escalation + sync};
+    \node[smallbox=ugmblue, below=0.3cm of weekly] (pamela) {Project Manager\\Pamela};
+    \node[smallbox=ugmblue, right=0.3cm of pamela] (datasaur) {PM Datasaur\\knowledge aggregation};
     \node[groupbox=ugmblue, fit=(weekly)(recur)(pamela)(datasaur),
         label={[grouplabel]below:Product families from de-main}] (products) {};
 
     \draw[arrow] (sources) -- (connectors);
     \draw[arrow] (connectors) -- (runtime);
     \draw[arrow] (runtime) -- (iam);
-    \draw[arrow] (runtime.south) -- (weekly.north);
-    \draw[arrow] (runtime.south) -- (recur.north);
-    \draw[arrow] (runtime.south) -- (pamela.north);
-    \draw[arrow] (runtime.south) -- (datasaur.north);
+    \draw[arrow] (runtime.south) -- (products.north);
     \draw[arrow] (iam.south) -- (cookbook.north);
 \end{tikzpicture}
 \end{document}

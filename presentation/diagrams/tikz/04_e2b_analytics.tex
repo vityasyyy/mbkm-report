@@ -13,12 +13,10 @@
     \node[groupbox=diagramgreen, fit=(sandbox)(code),
         label={[grouplabel]above:Execution boundary}] (runtime) {};
     \node[externalbox, right=of sandbox] (output) {MoM PDF\\email + Drive link};
-    \node[appbox, below=0.45cm of output] (schedule) {scheduled weekly\\AIP execution};
 
     \draw[arrow] (input) -- (agent);
     \draw[arrow] (agent) -- (sandbox);
     \draw[arrow] (sandbox) -- (code);
     \draw[arrow] (code.east) -| (output.south);
-    \draw[arrow] (schedule.west) -| (sandbox.south);
 \end{tikzpicture}
 \end{document}
