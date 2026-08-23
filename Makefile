@@ -26,8 +26,7 @@ report:
 		pdflatex -interaction=nonstopmode main.tex
 
 presentation-diagrams:
-	cd presentation/diagrams/tikz && \
-		for f in *.tex; do pdflatex -interaction=nonstopmode "$$f" >/dev/null 2>&1 && cp "$${f%.tex}.pdf" "../$${f%.tex}.pdf"; done
+	cd presentation && ./build-diagrams.sh
 
 presentation: presentation-diagrams
 	cd presentation && latexmk -xelatex main.tex
@@ -51,7 +50,7 @@ report-docker: build-docker
 	docker run --rm -v $(PWD)/report:/workspace/report $(DOCKER_IMAGE):$(DOCKER_TAG) sh -c "cd /workspace/report && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex"
 
 presentation-diagrams-docker: build-docker
-	docker run --rm -v $(PWD)/presentation:/workspace/presentation $(DOCKER_IMAGE):$(DOCKER_TAG) sh -c "cd /workspace/presentation/diagrams/tikz && for f in *.tex; do pdflatex -interaction=nonstopmode \"$$f\" >/dev/null 2>&1 && cp \"$${f%.tex}.pdf\" \"../$${f%.tex}.pdf\"; done"
+	docker run --rm -v $(PWD)/presentation:/workspace/presentation $(DOCKER_IMAGE):$(DOCKER_TAG) sh -c "cd /workspace/presentation && sh build-diagrams.sh"
 
 presentation-docker: presentation-diagrams-docker
 	docker run --rm -v $(PWD)/presentation:/workspace/presentation $(DOCKER_IMAGE):$(DOCKER_TAG) sh -c "cd /workspace/presentation && latexmk -xelatex main.tex"
