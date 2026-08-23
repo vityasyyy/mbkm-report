@@ -11,33 +11,32 @@
 \begin{tikzpicture}[
     node distance=0.4cm and 0.5cm,
     box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=2.9cm, minimum height=0.55cm, align=center,
-                line width=0.8pt, font=\scriptsize},
-    group/.style={rectangle, rounded corners=5pt, draw=ugmblue, fill=ugmblue!5,
+                minimum width=2.8cm, minimum height=0.7cm, align=center,
+                line width=0.9pt, font=\large},
+    group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
                   inner sep=6pt, line width=1.1pt},
-    arr/.style={-{Latex[length=1.8mm]}, line width=0.8pt, draw=gray!60},
-    lbl/.style={font=\scriptsize\bfseries}
+    arr/.style={-{Latex[length=2mm]}, line width=0.9pt, draw=gray!60},
+    lbl/.style={font=\large\bfseries}
 ]
 
-% Pipeline
+% CI/CD top row
 \node[box=ugmblue] (pr) {PR deploy};
-\node[box=ugmblue, below=0.4cm of pr] (gha) {GitHub Actions};
-\node[box=ugmblue, below=0.4cm of gha] (helm) {Helm chart};
-\node[group, fit=(pr)(gha)(helm), label={[lbl]above:CI/CD}] (ci) {};
+\node[box=ugmblue, right=0.5cm of pr] (gha) {GitHub Actions};
+\node[box=ugmblue, right=0.5cm of gha] (helm) {Helm chart};
+\node[group=ugmblue, fit=(pr)(gha)(helm), label={[lbl]above:CI/CD}] (ci) {};
 
-% Environments
-\node[box=degreen, right=2.2cm of gha] (dev) {dev env};
-\node[box=degreen, below=0.4cm of dev] (prod) {prod env};
+% Environments + CronJob (bottom row)
+\node[box=degreen, below=1.0cm of gha] (dev) {dev env};
+\node[box=degreen, right=0.5cm of dev] (prod) {prod env};
+\node[box=dered, right=0.5cm of prod] (cron) {Kubernetes CronJob};
+\node[box=dered, below=0.3cm of cron] (val) {validate job + logs};
 
-% CronJob
-\node[box=dered, right=2.2cm of dev] (cron) {Kubernetes CronJob};
-\node[box=dered, below=0.4cm of cron] (val) {validate job + logs};
-
-\draw[arr] (pr.south) -- (gha.north);
-\draw[arr] (gha.south) -- (helm.north);
-\draw[arr] (helm.east) -- (dev.west);
-\draw[arr] (dev.south) -- (prod.north);
-\draw[arr] (dev.east) -- (cron.west);
+\draw[arr] (pr.east) -- (gha.west);
+\draw[arr] (gha.east) -- (helm.west);
+\draw[arr] (gha.south) -- (dev.north);
+\draw[arr] (helm.south) -- (dev.north);
+\draw[arr] (dev.east) -- (prod.west);
+\draw[arr] (prod.east) -- (cron.west);
 \draw[arr] (cron.south) -- (val.north);
 
 \end{tikzpicture}

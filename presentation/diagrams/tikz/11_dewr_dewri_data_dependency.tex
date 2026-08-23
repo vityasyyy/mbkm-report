@@ -11,50 +11,45 @@
 \begin{tikzpicture}[
     node distance=0.4cm and 0.5cm,
     box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=2.9cm, minimum height=0.55cm, align=center,
-                line width=0.8pt, font=\scriptsize},
+                minimum width=2.7cm, minimum height=0.68cm, align=center,
+                line width=0.9pt, font=\large},
     db/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=2.4cm, minimum height=0.5cm, align=center,
-                line width=0.8pt, font=\scriptsize},
+                minimum width=2.2cm, minimum height=0.6cm, align=center,
+                line width=0.9pt, font=\large},
     group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
                   inner sep=6pt, line width=1.1pt},
-    arr/.style={-{Latex[length=1.8mm]}, line width=0.8pt, draw=gray!60},
-    lbl/.style={font=\scriptsize\bfseries}
+    arr/.style={-{Latex[length=2mm]}, line width=0.9pt, draw=gray!60},
+    lbl/.style={font=\large\bfseries}
 ]
 
-% DE-WR (writer)
-\node[box=ugmblue] (catapa) {CATAPA};
-\node[box=ugmblue, below=0.3cm of catapa] (drive) {Drive folder};
-\node[box=ugmblue, below=0.3cm of drive] (upsert) {UpsertDBBaseTool};
-\node[box=ugmblue, below=0.3cm of upsert] (ingest) {WeeklyReportIngestionTool};
-\node[box=ugmblue, below=0.3cm of ingest] (e2b) {E2B issue processor};
-\node[group=ugmblue, fit=(catapa)(drive)(upsert)(ingest)(e2b),
+% Top: DE-WR writer agents
+\node[box=ugmblue] (cat) {CATAPA};
+\node[box=ugmblue, right=0.4cm of cat] (drive) {Drive folder};
+\node[box=ugmblue, right=0.4cm of drive] (ups) {UpsertDBBaseTool};
+\node[box=ugmblue, right=0.4cm of ups] (ing) {WeeklyReportIngestionTool};
+\node[box=ugmblue, right=0.4cm of ing] (e2b) {E2B issue processor};
+\node[group=ugmblue, fit=(cat)(drive)(ups)(ing)(e2b),
       label={[lbl]above:DE-WR (writer)}] (wr) {};
 
-% Shared PostgreSQL
-\node[db=degreen, right=2.4cm of ingest] (orgs) {orgs};
-\node[db=degreen, below=0.25cm of orgs] (emp) {employees};
-\node[db=degreen, below=0.25cm of emp] (wr_db) {weekly\_reports};
-\node[db=degreen, below=0.25cm of wr_db] (iss) {issues};
+% Middle: Shared PostgreSQL
+\node[db=degreen, below=0.9cm of ups] (orgs) {orgs};
+\node[db=degreen, right=0.35cm of orgs] (emp) {employees};
+\node[db=degreen, right=0.35cm of emp] (wr_db) {weekly\_reports};
+\node[db=degreen, right=0.35cm of wr_db] (iss) {issues};
 \node[group=degreen, fit=(orgs)(emp)(wr_db)(iss),
       label={[lbl]above:Shared PostgreSQL}] (pg) {};
 
-% DE-WRI (reader)
-\node[box=dered, right=2.4cm of wr_db] (fetch) {FetchEmployeeIssuesTool\\JOIN \textbullet{} last 14 days};
-\node[box=dered, below=0.3cm of fetch] (detect) {RecurringIssueDetector};
-\node[box=dered, below=0.3cm of detect] (esc) {Escalate to GitHub + email};
-\node[group=dered, fit=(fetch)(detect)(esc),
-      label={[lbl]above:DE-WRI (reader)}] (wri) {};
+% Bottom: DE-WRI reader
+\node[box=dered, below=0.9cm of orgs] (fetch) {FetchEmployeeIssuesTool};
+\node[box=dered, right=0.4cm of fetch] (det) {RecurringIssueDetector};
+\node[box=dered, right=0.4cm of det] (esc) {Escalate to GitHub + email};
+\node[group=dered, fit=(fetch)(det)(esc),
+      label={[lbl]below:DE-WRI (reader) --- JOIN \textbullet{} last 14 days}] (wri) {};
 
-\draw[arr] (catapa.south) -- (drive.north);
-\draw[arr] (drive.south) -- (upsert.north);
-\draw[arr] (upsert.south) -- (ingest.north);
-\draw[arr] (ingest.south) -- (e2b.north);
-\draw[arr] (upsert.east) -- (wr_db.west);
-\draw[arr] (e2b.east) -- (iss.west);
-\draw[arr] (iss.east) -- (fetch.west);
-\draw[arr] (fetch.south) -- (detect.north);
-\draw[arr] (detect.south) -- (esc.north);
+\draw[arr] (cat.south) -- (orgs.north);
+\draw[arr] (e2b.south) -- (iss.north);
+\draw[arr] (orgs.south) -- (fetch.north);
+\draw[arr] (iss.south) -- (esc.north);
 
 \end{tikzpicture}
 \end{document}

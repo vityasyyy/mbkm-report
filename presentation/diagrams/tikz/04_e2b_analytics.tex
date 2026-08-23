@@ -11,38 +11,34 @@
 \begin{tikzpicture}[
     node distance=0.4cm and 0.5cm,
     box/.style={rectangle, rounded corners=3pt, draw=#1, fill=#1!8,
-                minimum width=2.8cm, minimum height=0.58cm, align=center,
-                line width=0.8pt, font=\scriptsize},
-    group/.style={rectangle, rounded corners=5pt, draw=ugmblue, fill=ugmblue!5,
+                minimum width=2.7cm, minimum height=0.7cm, align=center,
+                line width=0.9pt, font=\large},
+    group/.style={rectangle, rounded corners=5pt, draw=#1, fill=#1!6,
                   inner sep=6pt, line width=1.1pt},
-    arr/.style={-{Latex[length=1.8mm]}, line width=0.8pt, draw=gray!60},
-    lbl/.style={font=\scriptsize\bfseries}
+    arr/.style={-{Latex[length=2mm]}, line width=0.9pt, draw=gray!60},
+    lbl/.style={font=\large\bfseries}
 ]
 
-% Agent
-\node[box=ugmblue] (agent) {analytics\_agent};
-\node[box=ugmblue, below=0.35cm of agent] (tool) {e2b\_code\_interpreter\_tool};
-\node[group, fit=(agent)(tool), label={[lbl]above:Agent}] (agn) {};
+% Input -> Agent
+\node[box=dered] (in) {Meemo data};
+\node[box=ugmblue, right=1.2cm of in] (a1) {analytics\_agent};
+\node[box=ugmblue, below=0.3cm of a1] (a2) {e2b\_code\_interpreter tool};
+\node[group=ugmblue, fit=(a1)(a2), label={[lbl]above:Agent}] (agn) {};
 
 % Sandbox
-\node[box=degreen, right=2.2cm of agent] (sb) {E2B sandbox\\(isolated Python)};
-\node[box=degreen, below=0.35cm of sb] (code) {Sandbox.run\_code()\\matplotlib + ReportLab};
-\node[box=degreen, below=0.35cm of code] (pdf) {Big-4 MoM PDF};
-\node[group=degreen, fit=(sb)(code)(pdf),
-      label={[lbl]above:E2B sandbox}] (e2b) {};
+\node[box=degreen, right=1.2cm of a1] (s1) {E2B sandbox\\(isolated Python)};
+\node[box=degreen, below=0.3cm of s1] (s2) {Sandbox.run\_code()\\matplotlib + ReportLab};
+\node[box=degreen, below=0.3cm of s2] (s3) {Big-4 MoM PDF};
+\node[group=degreen, fit=(s1)(s2)(s3), label={[lbl]above:E2B sandbox}] (e2b) {};
 
-% Inputs / outputs
-\node[box=dered, left=1.6cm of agent, minimum width=2.2cm] (meemo) {Meemo data};
-\node[box=dered, right=1.6cm of pdf, minimum width=2.6cm] (out) {Email + Drive link};
+% Output
+\node[box=dered, right=1.2cm of s1] (out) {Email + Drive link};
+\node[font=\large\itshape, below=0.4cm of out] (cron) {cron \textbullet{} Fri 17:00};
 
-% Schedule
-\node[font=\scriptsize\itshape, below=0.5cm of e2b] (cron) {cron \textbullet{} Fri 17:00};
-
-\draw[arr] (meemo.east) -- (agent.west);
-\draw[arr] (agent.east) -- (sb.west);
-\draw[arr] (sb.south) -- (code.north);
-\draw[arr] (code.south) -- (pdf.north);
-\draw[arr] (pdf.east) -- (out.west);
+\draw[arr] (in.east) -- (a1.west);
+\draw[arr] (a1.east) -- (s1.west);
+\draw[arr] (a2.east) -- (s2.west);
+\draw[arr] (s3.east) -- (out.west);
 
 \end{tikzpicture}
 \end{document}
